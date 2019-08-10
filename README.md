@@ -2,7 +2,10 @@
 
 ## Local setup
 
-In order to make this application runnable, you need to install the following packages (linux):
+### Database
+
+In order to make this application runnable, you need to setup the database.
+To start, install following packages (linux):
 
 ```bash
 apt-get install postgresql-10 python-psycopg2 libpq-dev
@@ -10,13 +13,21 @@ apt-get install postgresql-10 python-psycopg2 libpq-dev
 
 To install postgresql, add postgres apt repository is required. The instructions are in https://www.postgresql.org/download/
 
-Also, create the real-state database is needed. To do that, run the following command on psql:
+Also, you need to create the real-state database. To do that, run the following command on psql:
 
 ```bash
 create database real_state_dev
 ```
 
 Or you can always use Docker (recommended) to get those things isolated, in a container.
+
+To create the schema and run the migrations, execute the command:
+
+```bash
+python manage.py db upgrade
+```
+
+### Server
 
 To run the application, install the dependencies running:
 
