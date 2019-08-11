@@ -10,11 +10,13 @@ Flask==1.1.1
 Flask-Migrate==2.5.2
 Flask-RESTful==0.3.7
 Flask-SQLAlchemy==2.4.0
+GeoAlchemy2==0.6.3
 gunicorn==19.9.0
 itsdangerous==1.1.0
 Jinja2==2.10.1
 Mako==1.1.0
 MarkupSafe==1.1.1
+marshmallow==2.20.0
 mccabe==0.6.1
 psycopg2==2.8.3
 psycopg2-binary==2.8.3

@@ -1,11 +1,14 @@
 from flask_restful import Resource, reqparse
 from flask import jsonify
 
-from ..models import Property
-from .. import db
+from app.models import Property
+from app.api.serializers import PropertySchema
+from app import db
 
 
 parser = reqparse.RequestParser()
+
+
 class PropertyList(Resource):
     def get(self):
         parser.add_argument("page", type=float, help="Page index.", required=False)
@@ -17,13 +20,14 @@ class PropertyList(Resource):
         page = args.get("page", 1)
         page_limit = args.get("page_limit", 10)
         property_list = Property.query.paginate(page, page_limit, False)
+        schema = PropertySchema(many=True)
 
         return dict(
-            data=[property.to_json() for property in property_list.items],
+            data=schema.dump(property_list.items),
             total=property_list.total,
             current_page=property_list.page,
             per_page=property_list.per_page,
-            num_pages=property_list.pages
+            num_pages=property_list.pages,
         )
 
     def post(self):
@@ -35,16 +39,22 @@ class PropertyList(Resource):
         property = Property(**args)
         db.session.add(property)
         db.session.commit()
-        return dict(property=property.to_json()), 201
+
+        schema = PropertySchema()
+        result, errors = schema.dump(property)
+
+        return dict(property=result), 201
+
 
 class PropertyDetail(Resource):
-
     def delete(self, id):
         property = Property.query.get_or_404(id)
         db.session.delete(property)
         db.session.commit()
-        return '', 204
+        return "", 204
 
     def get(self, id):
+        schema = PropertySchema()
         property = Property.query.get_or_404(id)
-        return property.to_json()
+        result, errors = schema.dump(property)
+        return result
