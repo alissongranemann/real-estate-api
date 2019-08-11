@@ -7,7 +7,7 @@ class AddressSchema(Schema):
 
 
 class PropertySchema(Schema):
+    id = fields.Integer()
+    area = fields.Integer(required=True)
+    price = fields.Float(required=True)
     address = fields.Nested(AddressSchema())
-
-    class Meta:
-        fields = ("id", "area", "price", "address")

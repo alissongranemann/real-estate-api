@@ -1,9 +1,10 @@
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, request, abort
 from flask import jsonify
 
 from app.models import Property
 from app.api.serializers import PropertySchema
 from app import db
+from marshmallow import ValidationError
 
 
 parser = reqparse.RequestParser()
@@ -13,15 +14,15 @@ class PropertyList(Resource):
     def get(self):
         parser.add_argument("page", type=float, help="Page index.", required=False)
         parser.add_argument(
-            "page_limit", type=int, help="Page max size.", required=False
+            "page_size", type=int, help="Page max size.", required=False
         )
         args = parser.parse_args()
 
         page = args.get("page", 1)
-        page_limit = args.get("page_limit", 10)
-        property_list = Property.query.paginate(page, page_limit, False)
+        page_size = args.get("page_size", 10)
+        property_list = Property.query.paginate(page, page_size, False)
         schema = PropertySchema(many=True)
-        result, errors =schema.dump(property_list.items)
+        result = schema.dump(property_list.items)
 
         return dict(
             data=result,
@@ -32,19 +33,19 @@ class PropertyList(Resource):
         )
 
     def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument("price", type=float, help="Property's price value.")
-        parser.add_argument("area", type=int, help="Property's area value.")
-        args = parser.parse_args()
+        json_data = request.get_json(force=True)
+        if not json_data:
+            abort(400)
+        try:
+            result = PropertySchema().load(json_data)
+        except ValidationError as err:
+            return {"errors": err.messages}, 400
 
-        property = Property(**args)
+        property = Property(**result)
         db.session.add(property)
         db.session.commit()
 
-        schema = PropertySchema()
-        result, errors = schema.dump(property)
-
-        return dict(property=result), 201
+        return "", 201
 
 
 class PropertyDetail(Resource):
@@ -57,5 +58,5 @@ class PropertyDetail(Resource):
     def get(self, id):
         schema = PropertySchema()
         property = Property.query.get_or_404(id)
-        result, errors = schema.dump(property)
+        result = schema.dump(property)
         return result
