@@ -5,4 +5,22 @@ services:
         ports:
         - "5432:5432"
         environment:
+            POSTGRES_USER: 'postgres'
+            POSTGRES_DB: 'real_state'
             POSTGRES_PASSWORD: '123456A!'
+        networks: 
+            - 'real_state'
+    flasky:
+        build: .
+        ports:
+        - "8000:5000"
+        env_file: .env
+        restart: always
+        depends_on: 
+            - db
+        networks: 
+            - 'real_state'
+
+networks:
+  real_state:
+    driver: bridge
