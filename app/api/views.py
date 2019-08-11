@@ -5,9 +5,9 @@ from ..models import Property
 from .. import db
 
 
+parser = reqparse.RequestParser()
 class PropertyList(Resource):
     def get(self):
-        parser = reqparse.RequestParser()
         parser.add_argument("page", type=float, help="Page index.", required=False)
         parser.add_argument(
             "page_limit", type=int, help="Page max size.", required=False
@@ -23,6 +23,7 @@ class PropertyList(Resource):
             total=property_list.total,
             current_page=property_list.page,
             per_page=property_list.per_page,
+            num_pages=property_list.pages
         )
 
     def post(self):
@@ -34,4 +35,16 @@ class PropertyList(Resource):
         property = Property(**args)
         db.session.add(property)
         db.session.commit()
-        return {"property": property.to_json()}, 201
+        return dict(property=property.to_json()), 201
+
+class PropertyDetail(Resource):
+
+    def delete(self, id):
+        property = Property.query.get_or_404(id)
+        db.session.delete(property)
+        db.session.commit()
+        return '', 204
+
+    def get(self, id):
+        property = Property.query.get_or_404(id)
+        return property.to_json()

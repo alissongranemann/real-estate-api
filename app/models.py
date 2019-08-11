@@ -31,7 +31,7 @@ class Property(db.Model, DictSerializable):
     price = db.Column(db.Float(), nullable=False)
     address_id = db.Column(db.Integer, db.ForeignKey("addresses.id"))
 
-    address = db.relationship("Address", back_populates="property")
+    address = db.relationship("Address", back_populates="property", cascade="all, delete, delete-orphan", single_parent=True)
 
     def __repr__(self):
         return f"<id {self.id}>"
