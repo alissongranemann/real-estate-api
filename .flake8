@@ -1,0 +1,4 @@
+[flake8]
+# E123,E133,E226,E241,E242 are ignored by default by pep8 and flake8
+#ignore = E123,E133,E226,E241,E242
+max-line-length = 88 #black
