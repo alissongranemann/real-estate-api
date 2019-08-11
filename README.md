@@ -20,8 +20,13 @@ create database real_state_dev
 ```
 
 Or you can always use Docker (recommended) to get those things isolated, in a container.
+To create and start the container running on background, execute:
 
-To create the schema and run the migrations, execute the command:
+```bash
+docker-compose up -d db
+```
+
+To run the migrations, execute the command:
 
 ```bash
 python manage.py db upgrade
@@ -39,4 +44,4 @@ Add a virtual enviroment for python's packages in the root directory to isolate 
 
 Configurate the enviroment variables accordingly on `env` file, following the `.env.example`.
 
-After all the previous steps are finished, run `python app.py` and check it on your browser with the `http://127.0.0.1:5000/` url.
+After all the previous steps are finished, run `python flasky.py` and check it on your browser with the `http://127.0.0.1:5000/api/v1` url.
