@@ -22,4 +22,4 @@ COPY flasky.py config.py boot.sh ./
 
 # run-time configuration
 EXPOSE 5000
-# ENTRYPOINT ["./boot.sh"]
+ENTRYPOINT ["./boot.sh"]
