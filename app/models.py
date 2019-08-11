@@ -1,15 +1,7 @@
 from app import db
 
-from collections import OrderedDict
 
-class DictSerializable(object):
-    def to_json(self):
-        result = OrderedDict()
-        for key in self.__mapper__.c.keys():
-            result[key] = getattr(self, key)
-        return result
-
-class Address(db.Model, DictSerializable):
+class Address(db.Model):
     __tablename__ = "addresses"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +15,7 @@ class Address(db.Model, DictSerializable):
         return f"<id {self.id}>"
 
 
-class Property(db.Model, DictSerializable):
+class Property(db.Model):
     __tablename__ = "properties"
 
     id = db.Column(db.Integer, primary_key=True)

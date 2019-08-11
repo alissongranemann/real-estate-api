@@ -21,9 +21,10 @@ class PropertyList(Resource):
         page_limit = args.get("page_limit", 10)
         property_list = Property.query.paginate(page, page_limit, False)
         schema = PropertySchema(many=True)
+        result, errors =schema.dump(property_list.items)
 
         return dict(
-            data=schema.dump(property_list.items),
+            data=result,
             total=property_list.total,
             current_page=property_list.page,
             per_page=property_list.per_page,
