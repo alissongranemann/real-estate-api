@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse, request, abort
 from flask import jsonify
 
-from app.models import Property
+from app.models import Property, Address
 from app.api.serializers import PropertySchema
 from app import db
 from marshmallow import ValidationError
@@ -41,7 +41,10 @@ class PropertyList(Resource):
         except ValidationError as err:
             return {"errors": err.messages}, 400
 
-        property = Property(**result)
+        address = Address(**result["address"])
+        property = Property(
+            price=result.get("price"), area=result.get("area"), address=address
+        )
         db.session.add(property)
         db.session.commit()
 
