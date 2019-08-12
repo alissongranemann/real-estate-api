@@ -1,5 +1,4 @@
 from flask_restful import Resource, reqparse, request, abort
-from flask import jsonify
 
 from app.models import Property, Address
 from app.api.serializers import PropertySchema

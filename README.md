@@ -2,6 +2,19 @@
 
 ## Local setup
 
+### Enviroment
+
+First of all, you need to install all the dependencies. To do that, run
+
+```bash
+pip install -r requirements
+```
+
+This project uses `black` as the code formatter and `flake8` as the linter.
+To add git-hooks on your enviroment, so you can run `black` and `flake8` on your project for every commit, please execute `pre-commit install`.
+
+Also, you need to configurate the enviroment variables accordingly. Create `env` file in the project's root folder and set the variables following the `.env.example`.
+
 ### Database
 
 In order to make this application runnable, you need to setup the database.
@@ -34,14 +47,4 @@ flask db upgrade
 
 ### Server
 
-To run the application, install the dependencies running:
-
-```bash
-pip install -r requirements
-```
-
-Add a virtual enviroment for python's packages in the root directory to isolate the dependencies is always a good alternative.
-
-Configurate the enviroment variables accordingly on `env` file, following the `.env.example`.
-
-After all the previous steps are finished, run `python flasky.py` or `flask run` and check it on your browser with the `http://127.0.0.1:5000/api/v1` url.
+Run `python flasky.py` or `flask run` and check it on your browser with the `http://127.0.0.1:5000/api/v1` url.
