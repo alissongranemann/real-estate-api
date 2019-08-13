@@ -1,0 +1,84 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.7.4
+    steps:
+
+      - checkout
+
+      - restore_cache:
+          keys: 
+            - deps-{{ checksum "poetry.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            poetry install
+
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths: 
+            - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - run:
+          name: Run black
+          command: |
+            poetry run black .
+
+      - run:
+          name: Run flake8
+          command: |
+            poetry run flake8 .
+
+    #   - run:
+    #       name: run tests
+    #       command: |
+    #         . venv/bin/activate
+    #         python manage.py test
+
+    #   - store_artifacts:
+    #       path: test-reports
+    #       destination: test-reports
+
+#   deployment:
+#     docker:
+#   -    image: circleci/python:3.7.4
+#     steps:
+#       - checkout
+
+#       - run:
+#           name: Deploy to Heroku
+#           command: |
+
+# workflows:
+#   version: 2
+
+#   # The build-and-test we will run EVERYTIME a piece of code changes
+#   build-and-test-workflow:
+#     jobs:
+#       - build-and-test
+  
+#   # The deployment workflow publishes the package
+#   deployment-workflow:
+#     jobs:
+
+#       # Runs build and test, but now just on Git tags (created from a GitHub release)
+#       - build-and-test:
+#           filters:
+#             tags:
+#               only: /v[0-9]+(\.[0-9]+)*/
+#             branches:
+#               ignore: /.*/
+
+#       # Runs the deployment job, just with the tags as well
+#       - deployment:
+#           requires:
+#             - build-and-test
+#           filters:
+#               tags:
+#                 only: /v[0-9]+(\.[0-9]+)*/
+#               branches:
+#                 ignore: /.*/
