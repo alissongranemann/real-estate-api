@@ -43,42 +43,26 @@ jobs:
     #       path: test-reports
     #       destination: test-reports
 
-#   deployment:
-#     docker:
-#   -    image: circleci/python:3.7.4
-#     steps:
-#       - checkout
+  deploy:
+    docker:
+      - image: buildpack-deps:stretch
+    environment:
+        HEROKU_APP_NAME: "real-state-api-stage"
+    steps:
+      - checkout
+      - run:
+          name: Deploy Stage to Heroku
+          command: |
+              git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
 
-#       - run:
-#           name: Deploy to Heroku
-#           command: |
-
-# workflows:
-#   version: 2
-
-#   # The build-and-test we will run EVERYTIME a piece of code changes
-#   build-and-test-workflow:
-#     jobs:
-#       - build-and-test
-  
-#   # The deployment workflow publishes the package
-#   deployment-workflow:
-#     jobs:
-
-#       # Runs build and test, but now just on Git tags (created from a GitHub release)
-#       - build-and-test:
-#           filters:
-#             tags:
-#               only: /v[0-9]+(\.[0-9]+)*/
-#             branches:
-#               ignore: /.*/
-
-#       # Runs the deployment job, just with the tags as well
-#       - deployment:
-#           requires:
-#             - build-and-test
-#           filters:
-#               tags:
-#                 only: /v[0-9]+(\.[0-9]+)*/
-#               branches:
-#                 ignore: /.*/
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: stage
