@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  heroku: circleci/heroku@1.0.0
+  heroku: circleci/heroku@0.0.8
 
 workflows:
   build-and-deploy:
@@ -9,10 +9,15 @@ workflows:
       - stage-deploy:
           requires:
             - build
+          filters:
+            branches:
+             only: stage
       - prod-deploy:
           requires:
             - build
-
+          filters:
+            branches:
+             only: master
 jobs:
   build:
     docker:
