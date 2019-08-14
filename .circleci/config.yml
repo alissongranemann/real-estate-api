@@ -1,4 +1,23 @@
-version: 2
+version: 2.1
+orbs:
+  heroku: circleci/heroku@0.0.8
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - build
+      - stage-deploy:
+          requires:
+            - build
+          filters:
+            branches:
+             only: stage
+      - prod-deploy:
+          requires:
+            - build
+          filters:
+            branches:
+             only: master
 jobs:
   build:
     docker:
@@ -36,43 +55,18 @@ jobs:
     #       destination: test-reports
 
   stage-deploy:
-    docker:
-      - image: buildpack-deps:stretch
-    environment:
-        HEROKU_APP_NAME: "real-state-api-stage"
+    executor: heroku/default
     steps:
       - checkout
-      - run:
-          name: Deploy Stage to Heroku
-          command: |
-              git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+      - heroku/deploy-via-git:
+          app-name: "real-state-api-stage"
+          only-branch: stage
+
 
   prod-deploy:
-    docker:
-      - image: buildpack-deps:stretch
-    environment:
-        HEROKU_APP_NAME: "real-state-api"
+    executor: heroku/default
     steps:
       - checkout
-      - run:
-          name: Deploy Master to Heroku
-          command: |
-              git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
-
-workflows:
-  version: 2
-  build-and-deploy:
-    jobs:
-      - build
-      - stage-deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: stage
-      - prod-deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+      - heroku/deploy-via-git:
+          app-name: "real-state-api"
+          only-branch: master
