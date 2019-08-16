@@ -20,7 +20,14 @@ services:
             - db
         networks: 
             - 'real_state'
-
+    db_test:
+        image: mdillon/postgis:11-alpine
+        ports:
+        - "5433:5432"
+        environment:
+            POSTGRES_USER: 'postgres'
+            POSTGRES_DB: 'real_state_test'
+            POSTGRES_PASSWORD: '123456A!'
 networks:
   real_state:
     driver: bridge

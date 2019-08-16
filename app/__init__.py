@@ -14,4 +14,8 @@ def create_app(config):
 
     app.register_blueprint(api_blueprint, url_prefix="/api/v1")
 
+    @app.route("/", methods=["GET"])
+    def home():
+        return "Up and running!", 200
+
     return app

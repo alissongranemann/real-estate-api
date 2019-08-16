@@ -14,6 +14,7 @@ Flask-Migrate==2.5.2
 Flask-RESTful==0.3.7
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.0
+Flask-Testing==0.7.1
 GeoAlchemy2==0.6.3
 gunicorn==19.9.0
 identify==1.4.6
@@ -36,6 +37,7 @@ pycodestyle==2.5.0
 pyflakes==2.1.1
 pyparsing==2.4.2
 pytest==5.0.1
+pytest-env==0.6.2
 python-dateutil==2.8.0
 python-dotenv==0.10.3
 python-editor==1.0.4
