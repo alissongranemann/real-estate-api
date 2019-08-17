@@ -2,6 +2,12 @@ version: 2.1
 orbs:
   heroku: circleci/heroku@0.0.8
 
+aliases:
+  - &step_migrate
+      name: Database migration
+      command: |
+        python manage.py upgrade
+
 workflows:
   build-and-deploy:
     jobs:
@@ -72,6 +78,7 @@ jobs:
       - heroku/deploy-via-git:
           app-name: "real-state-api-stage"
           only-branch: stage
+      - run: *step_migrate
 
   prod-deploy:
     executor: heroku/default
@@ -80,3 +87,4 @@ jobs:
       - heroku/deploy-via-git:
           app-name: "real-state-api"
           only-branch: master
+      - run: *step_migrate
