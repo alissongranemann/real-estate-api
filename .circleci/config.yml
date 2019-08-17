@@ -28,6 +28,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: real_state_test
+          POSTGRES_PASSWORD: ""
     steps:
       - checkout
       - restore_cache:
@@ -51,6 +52,10 @@ jobs:
           name: Run flake8
           command: |
             poetry run flake8 .
+      - run:
+          name: Wait for db
+          command: |
+            dockerize -wait tcp://localhost:5432 -timeout 1m
       - run:
           name: Run the Tests
           command: |
