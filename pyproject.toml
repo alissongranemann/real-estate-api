@@ -52,6 +52,7 @@ toml = "=0.10.0"
 wcwidth = "=0.1.7"
 Werkzeug = "=0.15.5"
 zipp = "=0.5.2"
+sqlalchemy-utils = "^0.34.1"
 
 [tool.poetry.dev-dependencies]
 black = "=19.3b0"
