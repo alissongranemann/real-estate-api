@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Run black
           command: |
-            poetry run black .
+            poetry run black --check .
       - run:
           name: Run flake8
           command: |
