@@ -6,7 +6,7 @@ aliases:
   - &step_migrate
       name: Database migration
       command: |
-        heroku run python manage.py db upgrade --app $HEROKU_APP_NAME
+        heroku run make migrate --app $HEROKU_APP_NAME
 
 workflows:
   build-and-deploy:
@@ -44,21 +44,17 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - deps-
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
-            poetry install
+            make install
       - save_cache:
           key: deps-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths: 
             - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
-          name: Run black
+          name: Run linter
           command: |
-            poetry run black --check .
-      - run:
-          name: Run flake8
-          command: |
-            poetry run flake8 .
+            make lint
       - run:
           name: Wait for db
           command: |
@@ -66,7 +62,7 @@ jobs:
       - run:
           name: Run the Tests
           command: |
-            poetry run python -m pytest --junitxml=test-reports/output.xml
+            make test
       - store_artifacts:
           path: test-reports/
       - store_test_results:
