@@ -80,6 +80,7 @@ jobs:
       - checkout
       - heroku/deploy-via-git:
           only-branch: stage
+      - heroku/install
       - run: *step_migrate
 
   prod-deploy:
@@ -90,4 +91,5 @@ jobs:
       - checkout
       - heroku/deploy-via-git:
           only-branch: master
+      - heroku/install
       - run: *step_migrate
