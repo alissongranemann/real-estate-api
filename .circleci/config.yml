@@ -14,7 +14,7 @@ workflows:
              only: stage
       - prod-deploy:
           requires:
-            - build
+            - build 
           filters:
             branches:
              only: master
@@ -22,19 +22,25 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.7.4
+        environment:
+          DATABASE_URL: postgres://postgres@localhost:5432/real_state_test
+      - image: mdillon/postgis:11-alpine
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: real_state_test
     steps:
       - checkout
       - restore_cache:
           keys: 
-            - deps-{{ checksum "poetry.lock" }}
+            - deps-{{ .Branch }}-{{ checksum "poetry.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - dependencies-
+            - deps-
       - run:
           name: install dependencies
           command: |
             poetry install
       - save_cache:
-          key: deps-{{ checksum "poetry.lock" }}
+          key: deps-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths: 
             - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
@@ -45,14 +51,14 @@ jobs:
           name: Run flake8
           command: |
             poetry run flake8 .
-    #   - run:
-    #       name: run tests
-    #       command: |
-    #         . venv/bin/activate
-    #         python manage.py test
-    #   - store_artifacts:
-    #       path: test-reports
-    #       destination: test-reports
+      - run:
+          name: Run the Tests
+          command: |
+            poetry run python -m pytest --junitxml=test-reports/output.xml
+      - store_artifacts:
+          path: test-reports/
+      - store_test_results:
+          path: test-reports/
 
   stage-deploy:
     executor: heroku/default
@@ -61,7 +67,6 @@ jobs:
       - heroku/deploy-via-git:
           app-name: "real-state-api-stage"
           only-branch: stage
-
 
   prod-deploy:
     executor: heroku/default
