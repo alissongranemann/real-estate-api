@@ -2,12 +2,22 @@ from marshmallow import Schema, fields, validates, ValidationError
 import re
 
 
-class LocationSchema(Schema):
-
+class StateSchema(Schema):
     id = fields.Integer()
-    city = fields.String(required=True)
-    neighbourhood = fields.String()
-    cep = fields.String(required=True)
+    description = fields.String(required=True)
+    initials = fields.String(required=True)
+
+
+class LocationSchema(Schema):
+    id = fields.Integer()
+    postal_code = fields.String(required=True)
+    route = fields.String(required=True, load_only=True)
+    sublocality = fields.String(required=True, load_only=True)
+    city = fields.String(required=True, load_only=True)
+    latitude = fields.Float(required=True, load_only=True)
+    longitude = fields.Float(required=True, load_only=True)
+    # geom = db.Column(Geometry("POINT"), nullable=False)
+    state = fields.Nested(StateSchema(), required=True, load_only=True)
 
     @validates("cep")
     def validate_cep(self, value):
