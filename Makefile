@@ -7,7 +7,7 @@ autoformat:  ## Run the autoformatter.
 	@poetry run black .
 
 test:  ## Run the tests.
-	@poetry run python -m pytest --junitxml=test-reports/output.xml
+	@poetry run python -m pytest --junitxml=test-reports/output.xml --cov=app --cov-report=html:test-reports
 	@echo -e "Testing passed!"
 
 lint:  ## Run the code linter.
