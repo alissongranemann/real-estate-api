@@ -29,11 +29,12 @@ def upgrade():
         "locations",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("postal_code", sa.String(length=9), nullable=False),
-        sa.Column("route", sa.String(), nullable=False),
-        sa.Column("sublocality", sa.String(), nullable=False),
+        sa.Column("street", sa.String(), nullable=False),
+        sa.Column("neighbourhood", sa.String(), nullable=False),
         sa.Column("city", sa.String(), nullable=False),
         sa.Column("latitude", sa.Float(), nullable=False),
         sa.Column("longitude", sa.Float(), nullable=False),
+        sa.Column("places_id", sa.String(), nullable=False),
         sa.Column(
             "geom", geoalchemy2.types.Geometry(geometry_type="POINT"), nullable=False
         ),

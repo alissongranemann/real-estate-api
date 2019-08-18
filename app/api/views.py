@@ -1,10 +1,11 @@
 from flask_restful import Resource, reqparse, request, abort
 
-from app.models import Property, Location
-from app.api.serializers import PropertySchema
+from app.models import Property, Location, State
+from app.api.serializers import PropertySchema, PropertyWriterSchema
 from app import db
 from marshmallow import ValidationError
-
+from app.gmaps import get_place_by_zip_code
+from geoalchemy2 import WKTElement
 
 parser = reqparse.RequestParser()
 
@@ -36,11 +37,33 @@ class PropertyList(Resource):
         if not json_data:
             abort(400)
         try:
-            result = PropertySchema().load(json_data)
+            result = PropertyWriterSchema().load(json_data)
         except ValidationError as err:
             return {"errors": err.messages}, 400
 
-        location = Location(**result["location"])
+        postal_code = result["postal_code"]
+        place = get_place_by_zip_code(postal_code)
+        location = Location.query.filter_by(postal_code=postal_code).one_or_none()
+        if location is None:
+            state_initials = place["state"]["short_name"]
+            state = State.query.filter_by(initials=state_initials).one_or_none()
+            if state is None:
+                description = place["state"]["long_name"]
+                state = State(initials=state_initials, description=description)
+            longitude = place["longitude"]
+            latitude = place["latitude"]
+            geom = WKTElement(f"POINT({longitude} {latitude})")
+            location = Location(
+                state=state,
+                postal_code=postal_code,
+                street=place["street"]["long_name"],
+                neighbourhood=place["neighbourhood"]["long_name"],
+                city=place["city"]["long_name"],
+                latitude=longitude,
+                longitude=latitude,
+                places_id=place["places_id"],
+                geom=geom,
+            )
         property = Property(
             price=result.get("price"), area=result.get("area"), location=location
         )

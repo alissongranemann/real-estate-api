@@ -10,7 +10,7 @@ class State(db.Model):
     description = db.Column(db.String(), nullable=False)
     initials = db.Column(db.String(2), nullable=False)
 
-    location = db.relationship("Location", back_populates="state")
+    locations = db.relationship("Location", back_populates="state")
 
     def __repr__(self):
         return f"<id {self.id}>"
@@ -21,16 +21,17 @@ class Location(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     postal_code = db.Column(db.String(9), nullable=False)
-    route = db.Column(db.String(), nullable=False)
-    sublocality = db.Column(db.String(), nullable=False)
+    street = db.Column(db.String(), nullable=False)
+    neighbourhood = db.Column(db.String(), nullable=False)
     city = db.Column(db.String(), nullable=False)
     latitude = db.Column(db.Float(), nullable=False)
     longitude = db.Column(db.Float(), nullable=False)
+    places_id = db.Column(db.String(), nullable=False)
     geom = db.Column(Geometry("POINT"), nullable=False)
     state_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
 
-    state = db.relationship("State", back_populates="state", cascade="save-update")
-    property = db.relationship("Property", back_populates="location")
+    state = db.relationship("State", back_populates="locations", cascade="save-update")
+    properties = db.relationship("Property", back_populates="location")
 
     def __repr__(self):
         return f"<id {self.id}>"
@@ -45,7 +46,7 @@ class Property(db.Model):
     location_id = db.Column(db.Integer, db.ForeignKey("locations.id"), nullable=False)
 
     location = db.relationship(
-        "Location", back_populates="properties", cascade="all, delete, delete-orphan"
+        "Location", back_populates="properties", cascade="all, delete"
     )
 
     def __repr__(self):
