@@ -2,7 +2,7 @@ from marshmallow import Schema, fields, validates, ValidationError
 import re
 
 
-class AddressSchema(Schema):
+class LocationSchema(Schema):
 
     id = fields.Integer()
     city = fields.String(required=True)
@@ -20,4 +20,4 @@ class PropertySchema(Schema):
     id = fields.Integer()
     area = fields.Integer(required=True)
     price = fields.Float(required=True)
-    address = fields.Nested(AddressSchema(), required=True)
+    location = fields.Nested(LocationSchema(), required=True)

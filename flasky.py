@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from app import create_app, db  # noqa: F401
-from app.models import Property, Address  # noqa: F401
+from app.models import Property, Location  # noqa: F401
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(dotenv_path):

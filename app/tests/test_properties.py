@@ -1,6 +1,6 @@
 import json
 
-from app.models import Property, Address
+from app.models import Property, Location
 
 
 def get_valid_property():
@@ -142,8 +142,8 @@ def test_get_properties(client, db):
 
 
 def save_new_property(db):
-    address = Address(city="Florianopolis", cep="00000-000")
-    property = Property(price=50000.0, area=40, address=address)
+    location = Location(city="Florianopolis", cep="00000-000")
+    property = Property(price=50000.0, area=40, location=location)
     db.session.add(property)
     db.session.commit()
     return property
