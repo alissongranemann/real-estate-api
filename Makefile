@@ -14,6 +14,9 @@ lint:  ## Run the code linter.
 	@poetry run flake8 .
 	@poetry run black --check .
 
+makemigrations: ## Create new database migrations
+	@poetry run python manage.py db migrate
+
 migrate: ## Run database migrations
 	@poetry run python manage.py db upgrade
 
