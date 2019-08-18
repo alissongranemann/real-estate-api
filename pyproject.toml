@@ -63,6 +63,7 @@ Flask-Testing = "^0.7.1"
 pytest-env = "^0.6.2"
 subprocess32 = "^3.5"
 pytest-cov = "^2.7"
+pytest-html = "^1.22"
 
 [tool.black]
 line-length = 88
