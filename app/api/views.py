@@ -4,7 +4,7 @@ from app.models import Property, Location, State
 from app.api.serializers import PropertySchema, PropertyWriterSchema
 from app import db
 from marshmallow import ValidationError
-from app.gmaps import get_place_by_zip_code
+from app.gmaps import get_place_by_postal_code
 from geoalchemy2 import WKTElement
 
 parser = reqparse.RequestParser()
@@ -42,14 +42,24 @@ class PropertyList(Resource):
             return {"errors": err.messages}, 400
 
         postal_code = result["postal_code"]
-        place = get_place_by_zip_code(postal_code)
+        place = get_place_by_postal_code(postal_code)
+        if place is None:
+            return {"errors": ["No place was found."]}, 400
+        location = self.get_location(place)
+        property = Property(
+            price=result.get("price"), area=result.get("area"), location=location
+        )
+        db.session.add(property)
+        db.session.commit()
+
+        return "", 201
+
+    def get_location(self, place):
+        postal_code = place["postal_code"]["long_name"]
         location = Location.query.filter_by(postal_code=postal_code).one_or_none()
         if location is None:
             state_initials = place["state"]["short_name"]
-            state = State.query.filter_by(initials=state_initials).one_or_none()
-            if state is None:
-                description = place["state"]["long_name"]
-                state = State(initials=state_initials, description=description)
+            state = self.get_state(state_initials, place)
             longitude = place["longitude"]
             latitude = place["latitude"]
             geom = WKTElement(f"POINT({longitude} {latitude})")
@@ -64,13 +74,16 @@ class PropertyList(Resource):
                 places_id=place["places_id"],
                 geom=geom,
             )
-        property = Property(
-            price=result.get("price"), area=result.get("area"), location=location
-        )
-        db.session.add(property)
-        db.session.commit()
 
-        return "", 201
+        return location
+
+    def get_state(self, state_initials, place):
+        state = State.query.filter_by(initials=state_initials).one_or_none()
+        if state is None:
+            description = place["state"]["long_name"]
+            state = State(initials=state_initials, description=description)
+
+        return state
 
 
 class PropertyDetail(Resource):
