@@ -20,6 +20,9 @@ makemigrations: ## Create new database migrations
 migrate: ## Run database migrations
 	@poetry run python manage.py db upgrade
 
+heroku-migrate: ## Run database migrations on heroku
+	@python manage.py db upgrade
+
 start:  ## Start the server
 	@poetry run flask run
 

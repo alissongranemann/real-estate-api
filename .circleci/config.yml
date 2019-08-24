@@ -6,7 +6,7 @@ aliases:
   - &step_migrate
       name: Database migration
       command: |
-        heroku run make migrate --app $HEROKU_APP_NAME
+        heroku run make heroku-migrate --app $HEROKU_APP_NAME
 
 workflows:
   build-and-deploy:
