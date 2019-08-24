@@ -16,7 +16,7 @@ class LocationSchema(Schema):
     city = fields.String(required=True)
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
-    # geom = db.Column(Geometry("POINT"), nullable=False)
+    places_id = fields.String(required=True)
     state = fields.Nested(StateSchema(), required=True)
 
 

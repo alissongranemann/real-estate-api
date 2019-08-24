@@ -65,6 +65,8 @@ pytest-env = "^0.6.2"
 subprocess32 = "^3.5"
 pytest-cov = "^2.7"
 pytest-html = "^1.22"
+pytest-mock = "^1.10"
+pytest-flask = "^0.15.0"
 
 [tool.black]
 line-length = 88

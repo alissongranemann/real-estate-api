@@ -14,6 +14,7 @@ def app():
     engine = create_engine(database_url)
     if not database_exists(engine.url):
         create_database(engine.url)
+        engine.execute("CREATE EXTENSION postgis")
 
     yield app
 

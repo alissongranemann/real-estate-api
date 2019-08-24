@@ -1,17 +1,33 @@
 import json
 
-from app.models import Property, Location
+from app.models import Property, Location, State
+from geoalchemy2 import WKTElement
+from unittest.mock import patch
 
 
 def get_valid_property():
+    return {"area": 50, "price": 50000.0, "postal_code": "88040-000"}
+
+
+def get_valid_place():
     return {
-        "area": 50,
-        "price": 50000.0,
-        "address": {"city": "City", "cep": "00000-000"},
+        "postal_code": {"long_name": "88040-000", "short_name": "88040-000"},
+        "street": {
+            "long_name": "Rua Deputado Antônio Edu Vieira",
+            "short_name": "R. Dep. Antônio Edu Vieira",
+        },
+        "neighbourhood": {"long_name": "Pantanal", "short_name": "Pantanal"},
+        "city": {"long_name": "Florianópolis", "short_name": "Florianópolis"},
+        "state": {"long_name": "Santa Catarina", "short_name": "SC"},
+        "latitude": -27.6090093,
+        "longitude": -48.5215363,
+        "places_id": "ChIJn4fZaqg5J5URBkczejLhp_4",
     }
 
 
-def test_add_property(client):
+@patch("app.api.views.get_place_by_postal_code")
+def test_add_property(mock_get_place_by_postal_code, client):
+    mock_get_place_by_postal_code.return_value = get_valid_place()
     response = client.post(
         "/api/v1/properties",
         data=json.dumps(get_valid_property()),
@@ -24,13 +40,14 @@ def test_add_property(client):
 
 def test_add_invalid_price_property(client):
     invalid_property = get_valid_property()
-    invalid_property["price"] = "price"
+    invalid_property["price"] = "invalid"
     response = client.post(
         "/api/v1/properties",
         data=json.dumps(invalid_property),
         content_type="application/json",
     )
     assert response.status_code == 400
+    print(response)
     data = json.loads(response.data.decode())
     errors = data.get("errors")
     assert errors is not None
@@ -42,7 +59,7 @@ def test_add_invalid_price_property(client):
 
 def test_add_invalid_area_property(client):
     invalid_property = get_valid_property()
-    invalid_property["area"] = "area"
+    invalid_property["area"] = "invalid"
     response = client.post(
         "/api/v1/properties",
         data=json.dumps(invalid_property),
@@ -60,7 +77,7 @@ def test_add_invalid_area_property(client):
 
 def test_add_invalid_cep_property(client):
     invalid_property = get_valid_property()
-    invalid_property["address"]["cep"] = "invalid"
+    invalid_property["postal_code"] = "invalid"
     response = client.post(
         "/api/v1/properties",
         data=json.dumps(invalid_property),
@@ -70,32 +87,10 @@ def test_add_invalid_cep_property(client):
     data = json.loads(response.data.decode())
     errors = data.get("errors")
     assert errors is not None
-    address_error = errors.get("address")
-    assert address_error is not None
-    cep_error = address_error.get("cep")
-    assert cep_error is not None
-    assert len(cep_error) == 1
-    assert "must follow the #####-### pattern" in cep_error[0]
-
-
-def test_add_invalid_city_property(client):
-    invalid_property = get_valid_property()
-    invalid_property["address"].pop("city")
-    response = client.post(
-        "/api/v1/properties",
-        data=json.dumps(invalid_property),
-        content_type="application/json",
-    )
-    assert response.status_code == 400
-    data = json.loads(response.data.decode())
-    errors = data.get("errors")
-    assert errors is not None
-    address_error = errors.get("address")
-    assert address_error is not None
-    city_error = address_error.get("city")
-    assert city_error is not None
-    assert len(city_error) == 1
-    assert "required field" in city_error[0]
+    postal_code_error = errors.get("postal_code")
+    assert postal_code_error is not None
+    assert len(postal_code_error) == 1
+    assert "must follow the #####-### pattern" in postal_code_error[0]
 
 
 def test_delete_property(client, db):
@@ -117,14 +112,28 @@ def test_get_property(client, db):
     assert area == 40
     price = data.get("price")
     assert price == 50000.0
-    address = data.get("address")
-    assert len(address) == 4
-    city = address.get("city")
-    assert city == "Florianopolis"
-    cep = address.get("cep")
-    assert cep == "00000-000"
-    neighbourhood = address.get("neighbourhood")
-    assert neighbourhood is None
+    location = data.get("location")
+    assert len(location) == 9
+    city = location.get("city")
+    assert city == "Florianópolis"
+    postal_code = location.get("postal_code")
+    assert postal_code == "00000-000"
+    neighbourhood = location.get("neighbourhood")
+    assert neighbourhood == "Bairro teste"
+    street = location.get("street")
+    assert street == "Rua teste"
+    places_id = location.get("places_id")
+    assert places_id == "12345ab"
+    latitude = location.get("latitude")
+    assert latitude == -20.10
+    longitude = location.get("longitude")
+    assert longitude == 10.20
+    state = location.get("state")
+    assert len(state) == 3
+    initials = state.get("initials")
+    assert initials == "SC"
+    description = state.get("description")
+    assert description == "Santa Catarina"
 
 
 def test_get_properties(client, db):
@@ -142,7 +151,21 @@ def test_get_properties(client, db):
 
 
 def save_new_property(db):
-    location = Location(city="Florianopolis", cep="00000-000")
+    state = State(initials="SC", description="Santa Catarina")
+    longitude = 10.20
+    latitude = -20.10
+    geom = WKTElement(f"POINT({longitude} {latitude})")
+    location = Location(
+        state=state,
+        postal_code="00000-000",
+        street="Rua teste",
+        neighbourhood="Bairro teste",
+        city="Florianópolis",
+        latitude=latitude,
+        longitude=longitude,
+        places_id="12345ab",
+        geom=geom,
+    )
     property = Property(price=50000.0, area=40, location=location)
     db.session.add(property)
     db.session.commit()

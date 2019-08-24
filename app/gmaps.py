@@ -4,9 +4,9 @@ import os
 ISO_CODE = "BR"
 
 
-def get_place_by_zip_code(zip_code):
+def get_place_by_postal_code(postal_code):
     gmaps = googlemaps.Client(key=os.environ["GOOGLE_PLACES_API"])
-    results = gmaps.geocode(f"{zip_code}, {ISO_CODE}")
+    results = gmaps.geocode(f"{postal_code}, {ISO_CODE}")
     if results:
         geocode_result = results[0]
         return serialize(geocode_result)
