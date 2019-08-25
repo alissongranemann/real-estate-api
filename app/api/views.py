@@ -39,7 +39,7 @@ class PropertyList(Resource):
         try:
             result = PropertyWriterSchema().load(json_data)
         except ValidationError as err:
-            abort(400, {"errors": err.messages})
+            abort(400, errors=err.messages)
 
         postal_code = result["postal_code"]
         location = self.get_location(postal_code)
@@ -56,7 +56,10 @@ class PropertyList(Resource):
         if location is None:
             place = get_place_by_postal_code(postal_code)
             if place is None:
-                return {"errors": ["No place was found."]}, 400
+                return (
+                    {"errors": ["No place was found with the provided postal code."]},
+                    400,
+                )
             state_initials = place["state"]["short_name"]
             state = self.get_state(state_initials, place)
             longitude = place["longitude"]
@@ -64,10 +67,8 @@ class PropertyList(Resource):
             geom = WKTElement(f"POINT({longitude} {latitude})")
             city = place.get("city")
             if city is None:
-                abort(
-                    400,
-                    {"errors": {"city", "City inexistent on Google Places response."}},
-                )
+                abort(400, errors={"city", "No city in Places API response."})
+            city_name = city.get("long_name")
             street = (
                 place["street"]["long_name"]
                 if place.get("street") is not None
@@ -83,7 +84,7 @@ class PropertyList(Resource):
                 postal_code=postal_code,
                 street=street,
                 neighbourhood=neighbourhood,
-                city=city,
+                city=city_name,
                 latitude=longitude,
                 longitude=latitude,
                 places_id=place["places_id"],

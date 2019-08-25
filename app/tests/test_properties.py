@@ -137,9 +137,9 @@ def test_get_property(client, db):
 
 
 def test_get_properties(client, db):
-    save_new_property(db)
-    save_new_property(db)
-    save_new_property(db)
+    save_new_property(db, "00000-000", "12345ab")
+    save_new_property(db, "00000-001", "12345cd")
+    save_new_property(db, "00000-002", "12345ef")
 
     response = client.get(f"/api/v1/properties")
     assert response.status_code == 200
@@ -150,20 +150,20 @@ def test_get_properties(client, db):
     assert total == 3
 
 
-def save_new_property(db):
+def save_new_property(db, postal_code="00000-000", places_id="12345ab"):
     state = State(initials="SC", description="Santa Catarina")
     longitude = 10.20
     latitude = -20.10
     geom = WKTElement(f"POINT({longitude} {latitude})")
     location = Location(
         state=state,
-        postal_code="00000-000",
+        postal_code=postal_code,
         street="Rua teste",
         neighbourhood="Bairro teste",
         city="Florianópolis",
         latitude=latitude,
         longitude=longitude,
-        places_id="12345ab",
+        places_id=places_id,
         geom=geom,
     )
     property = Property(price=50000.0, area=40, location=location)
