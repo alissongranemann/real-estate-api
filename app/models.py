@@ -20,13 +20,13 @@ class Location(db.Model):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
-    postal_code = db.Column(db.String(9), nullable=False)
-    street = db.Column(db.String(), nullable=False)
-    neighbourhood = db.Column(db.String(), nullable=False)
+    postal_code = db.Column(db.String(9), nullable=False, unique=True)
+    street = db.Column(db.String())
+    neighbourhood = db.Column(db.String())
     city = db.Column(db.String(), nullable=False)
     latitude = db.Column(db.Float(), nullable=False)
     longitude = db.Column(db.Float(), nullable=False)
-    places_id = db.Column(db.String(), nullable=False)
+    places_id = db.Column(db.String(), nullable=False, unique=True)
     geom = db.Column(Geometry("POINT"), nullable=False)
     state_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
 

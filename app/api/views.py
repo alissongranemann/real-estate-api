@@ -39,13 +39,10 @@ class PropertyList(Resource):
         try:
             result = PropertyWriterSchema().load(json_data)
         except ValidationError as err:
-            return {"errors": err.messages}, 400
+            abort(400, {"errors": err.messages})
 
         postal_code = result["postal_code"]
-        place = get_place_by_postal_code(postal_code)
-        if place is None:
-            return {"errors": ["No place was found."]}, 400
-        location = self.get_location(place)
+        location = self.get_location(postal_code)
         property = Property(
             price=result.get("price"), area=result.get("area"), location=location
         )
@@ -54,21 +51,39 @@ class PropertyList(Resource):
 
         return "", 201
 
-    def get_location(self, place):
-        postal_code = place["postal_code"]["long_name"]
+    def get_location(self, postal_code):
         location = Location.query.filter_by(postal_code=postal_code).one_or_none()
         if location is None:
+            place = get_place_by_postal_code(postal_code)
+            if place is None:
+                return {"errors": ["No place was found."]}, 400
             state_initials = place["state"]["short_name"]
             state = self.get_state(state_initials, place)
             longitude = place["longitude"]
             latitude = place["latitude"]
             geom = WKTElement(f"POINT({longitude} {latitude})")
+            city = place.get("city")
+            if city is None:
+                abort(
+                    400,
+                    {"errors": {"city", "City inexistent on Google Places response."}},
+                )
+            street = (
+                place["street"]["long_name"]
+                if place.get("street") is not None
+                else None
+            )
+            neighbourhood = (
+                place["neighbourhood"]["long_name"]
+                if place.get("neighbourhood") is not None
+                else None
+            )
             location = Location(
                 state=state,
                 postal_code=postal_code,
-                street=place["street"]["long_name"],
-                neighbourhood=place["neighbourhood"]["long_name"],
-                city=place["city"]["long_name"],
+                street=street,
+                neighbourhood=neighbourhood,
+                city=city,
                 latitude=longitude,
                 longitude=latitude,
                 places_id=place["places_id"],
