@@ -21,7 +21,7 @@ migrate: ## Run database migrations
 	@poetry run python manage.py db upgrade
 
 heroku-migrate: ## Run database migrations on heroku
-	@python manage.py db upgrade
+	@python manage.py db upgrade || (echo "Migration failed."; exit 1)
 
 start:  ## Start the server
 	@poetry run flask run
