@@ -21,16 +21,11 @@ class LocationSchema(Schema):
 
 
 class PropertySchema(Schema):
-    id = fields.Integer()
+    id = fields.Integer(dump_only=True)
     area = fields.Integer(required=True)
     price = fields.Float(required=True)
-    location = fields.Nested(LocationSchema(), required=True)
-
-
-class PropertyReaderSchema(Schema):
-    area = fields.Integer(required=True)
-    price = fields.Float(required=True)
-    postal_code = fields.String(required=True)
+    location = fields.Nested(LocationSchema(), required=True, dump_only=True)
+    postal_code = fields.String(required=True, load_only=True)
 
     @validates("postal_code")
     def validate_postal_code(self, value):

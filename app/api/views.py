@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse, request, abort
 
 from app.models import Property, Location, State
-from app.api.serializers import PropertySchema, PropertyReaderSchema
+from app.api.serializers import PropertySchema
 from app import db
 from marshmallow import ValidationError
 from app.gmaps import get_place_by_postal_code
@@ -37,7 +37,7 @@ class PropertyList(Resource):
         if not json_data:
             abort(400)
         try:
-            result = PropertyReaderSchema().load(json_data)
+            result = PropertySchema().load(json_data)
         except ValidationError as err:
             abort(400, errors=err.messages)
 
