@@ -189,7 +189,9 @@ def save_new_property(db, postal_code="00000-000", places_id="12345ab"):
         places_id=places_id,
         geom=geom,
     )
-    property = Property(price=50000.0, area=40, location=location)
+    property = Property(
+        price=50000.0, area=40, location=location, url="http://site.com"
+    )
     db.session.add(property)
     db.session.commit()
     return property
