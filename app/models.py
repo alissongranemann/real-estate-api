@@ -44,12 +44,13 @@ class Property(db.Model):
     area = db.Column(db.Integer(), nullable=False)
     price = db.Column(db.Float(), nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey("locations.id"), nullable=False)
+    url = db.Column(db.String(), nullable=False)
 
     location = db.relationship(
         "Location", back_populates="properties", cascade="all, delete"
     )
 
-    # __table_args__ = db.Index("area_price_index", area, price)
+    __table_args__ = (db.Index("area_price_index", area, price),)
 
     def __repr__(self):
         return f"<id: {self.id}, location: {self.location}>"

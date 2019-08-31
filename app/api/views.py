@@ -48,15 +48,16 @@ class PropertyList(Resource):
         postal_code = result["postal_code"]
         price = result.get("price")
         area = result.get("area")
+        url = result.get("url")
         try:
             location = self.get_location(postal_code)
             if self.property_exists(postal_code, price, area):
                 return "", 303
-            property = Property(price=price, area=area, location=location)
+            property = Property(price=price, area=area, location=location, url=url)
             db.session.add(property)
             db.session.commit()
         except Exception as err:
-            LOG.error(f"Error persisting property: {err}")
+            LOG.error(f"Error while creating a property: {err}")
             abort(400, errors=[err])
 
         return "", 201
@@ -77,7 +78,7 @@ class PropertyList(Resource):
         if location is None:
             raw_place = get_place_by_postal_code(postal_code)
             if raw_place is None:
-                raise Exception(f"Postal code {postal_code} returned no places.")
+                raise Exception(f"Postal code {postal_code} returned no place.")
             try:
                 place = PlaceReaderSchema().load(raw_place)
             except ValidationError as err:
