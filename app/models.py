@@ -26,7 +26,7 @@ class Location(db.Model):
     city = db.Column(db.String(), nullable=False)
     latitude = db.Column(db.Float(), nullable=False)
     longitude = db.Column(db.Float(), nullable=False)
-    places_id = db.Column(db.String(), nullable=False, unique=True)
+    places_id = db.Column(db.String(), nullable=False)
     geom = db.Column(Geometry("POINT"), nullable=False)
     state_id = db.Column(db.Integer, db.ForeignKey("states.id"), nullable=False)
 
