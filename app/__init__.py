@@ -2,12 +2,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+logger = None
 
 
 def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    logger = app.logger  # noqa: F841
     db.init_app(app)
 
     from .api import api_blueprint

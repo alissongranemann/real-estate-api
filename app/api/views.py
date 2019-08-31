@@ -1,8 +1,8 @@
 from flask_restful import Resource, reqparse, request, abort
 
 from app.models import Property, Location, State
-from app.api.serializers import PropertySchema
-from app import db
+from app.api.serializers import PropertySchema, PlaceReaderSchema
+from app import db, logger
 from marshmallow import ValidationError
 from app.gmaps import get_place_by_postal_code
 from geoalchemy2 import WKTElement
@@ -54,37 +54,30 @@ class PropertyList(Resource):
     def get_location(self, postal_code):
         location = Location.query.filter_by(postal_code=postal_code).one_or_none()
         if location is None:
-            place = get_place_by_postal_code(postal_code)
-            if place is None:
+            raw_place = get_place_by_postal_code(postal_code)
+            if raw_place is None:
                 return (
                     {"errors": ["No place was found with the provided postal code."]},
                     400,
                 )
-            state_initials = place["state"]["short_name"]
-            state = self.get_state(state_initials, place)
+            try:
+                place = PlaceReaderSchema().load(raw_place)
+            except ValidationError as err:
+                logger.info(f"Google Places API returned an invalid value: {raw_place}")
+                logger.info(f"Validation error: {err}")
+                return ({"errors": ["Internal error."]}, 400)
+
+            place = PlaceReaderSchema().load(raw_place)
+            state = self.get_state(place["state"])
             longitude = place["longitude"]
             latitude = place["latitude"]
             geom = WKTElement(f"POINT({longitude} {latitude})")
-            city = place.get("city")
-            if city is None:
-                abort(400, errors={"city", "No city in Places API response."})
-            city_name = city.get("long_name")
-            street = (
-                place["street"]["long_name"]
-                if place.get("street") is not None
-                else None
-            )
-            neighbourhood = (
-                place["neighbourhood"]["long_name"]
-                if place.get("neighbourhood") is not None
-                else None
-            )
             location = Location(
                 state=state,
                 postal_code=postal_code,
-                street=street,
-                neighbourhood=neighbourhood,
-                city=city_name,
+                street=place.get("street"),
+                neighbourhood=place.get("neighbourhood"),
+                city=place.get("city"),
                 latitude=longitude,
                 longitude=latitude,
                 places_id=place["places_id"],
@@ -93,11 +86,11 @@ class PropertyList(Resource):
 
         return location
 
-    def get_state(self, state_initials, place):
+    def get_state(self, state_data):
+        state_initials = state_data[0]
         state = State.query.filter_by(initials=state_initials).one_or_none()
         if state is None:
-            description = place["state"]["long_name"]
-            state = State(initials=state_initials, description=description)
+            state = State(initials=state_initials, description=state_data[1])
 
         return state
 

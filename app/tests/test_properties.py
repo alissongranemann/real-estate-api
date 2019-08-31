@@ -6,7 +6,12 @@ from unittest.mock import patch
 
 
 def get_valid_property():
-    return {"area": 50, "price": 50000.0, "postal_code": "88040-000"}
+    return {
+        "area": 50,
+        "price": 50000.0,
+        "postal_code": "88040-000",
+        "url": "http://site.com",
+    }
 
 
 def get_valid_place():

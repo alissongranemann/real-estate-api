@@ -26,6 +26,7 @@ class PropertySchema(Schema):
     price = fields.Float(required=True)
     location = fields.Nested(LocationSchema(), required=True, dump_only=True)
     postal_code = fields.String(required=True, load_only=True)
+    url = fields.String(required=True, load_only=True)
 
     @validates("postal_code")
     def validate_postal_code(self, value):
@@ -48,12 +49,19 @@ class AddressComponentShortName(fields.Field):
         return obj.get("short_name")
 
 
-class PlaceReader(Schema):
+class AddressComponentShortLongName(fields.Field):
+    def _deserialize(self, obj, attr, data, **kwargs):
+        if obj is None:
+            return None
+        return (obj.get("short_name"), obj.get("long_name"))
+
+
+class PlaceReaderSchema(Schema):
     places_id = fields.String(required=True)
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
     street = AddressComponentLongName()
     neighbourhood = AddressComponentLongName()
     city = AddressComponentLongName(required=True)
-    state = AddressComponentShortName(required=True)
+    state = AddressComponentShortLongName(required=True)
     postal_code = AddressComponentShortName(required=True)
