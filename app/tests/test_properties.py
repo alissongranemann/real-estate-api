@@ -5,11 +5,11 @@ from geoalchemy2 import WKTElement
 from unittest.mock import patch
 
 
-def get_valid_property():
+def get_valid_property(area=50, price=50000.0, postal_code="88040-000"):
     return {
-        "area": 50,
-        "price": 50000.0,
-        "postal_code": "88040-000",
+        "area": area,
+        "price": price,
+        "postal_code": postal_code,
         "url": "http://site.com",
         # "origin": "origin",
     }
@@ -36,12 +36,29 @@ def test_add_property(mock_get_place_by_postal_code, client):
     mock_get_place_by_postal_code.return_value = get_valid_place()
     response = client.post(
         "/api/v1/properties",
-        data=json.dumps(get_valid_property()),
+        data=json.dumps(get_valid_property(100, 100000.0)),
         content_type="application/json",
     )
     data = json.loads(response.data.decode())
     assert response.status_code == 201
     assert "" == data
+
+
+@patch("app.api.views.get_place_by_postal_code")
+def test_add_existent_property(mock_get_place_by_postal_code, client):
+    mock_get_place_by_postal_code.return_value = get_valid_place()
+    response = client.post(
+        "/api/v1/properties",
+        data=json.dumps(get_valid_property(100, 100000.0)),
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    response = client.post(
+        "/api/v1/properties",
+        data=json.dumps(get_valid_property(100, 100000.0)),
+        content_type="application/json",
+    )
+    assert response.status_code == 303
 
 
 def test_add_invalid_price_property(client):

@@ -46,11 +46,13 @@ class PropertyList(Resource):
             abort(400, errors=err.messages)
 
         postal_code = result["postal_code"]
+        price = result.get("price")
+        area = result.get("area")
         try:
             location = self.get_location(postal_code)
-            property = Property(
-                price=result.get("price"), area=result.get("area"), location=location
-            )
+            if self.property_exists(postal_code, price, area):
+                return "", 303
+            property = Property(price=price, area=area, location=location)
             db.session.add(property)
             db.session.commit()
         except Exception as err:
@@ -58,6 +60,17 @@ class PropertyList(Resource):
             abort(400, errors=[err])
 
         return "", 201
+
+    def property_exists(self, postal_code, price, area):
+        query = (
+            db.session.query(Location)
+            .join(Property)
+            .filter(Location.postal_code == postal_code)
+            .filter(Property.area == area)
+            .filter(Property.price == price)
+        )
+
+        return query.filter(query.exists()).scalar()
 
     def get_location(self, postal_code):
         location = Location.query.filter_by(postal_code=postal_code).one_or_none()

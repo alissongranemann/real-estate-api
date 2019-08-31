@@ -49,5 +49,7 @@ class Property(db.Model):
         "Location", back_populates="properties", cascade="all, delete"
     )
 
+    # __table_args__ = db.Index("area_price_index", area, price)
+
     def __repr__(self):
         return f"<id: {self.id}, location: {self.location}>"
