@@ -11,6 +11,7 @@ def get_valid_property():
         "price": 50000.0,
         "postal_code": "88040-000",
         "url": "http://site.com",
+        # "origin": "origin",
     }
 
 

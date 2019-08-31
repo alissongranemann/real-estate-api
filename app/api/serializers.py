@@ -27,6 +27,7 @@ class PropertySchema(Schema):
     location = fields.Nested(LocationSchema(), required=True, dump_only=True)
     postal_code = fields.String(required=True, load_only=True)
     url = fields.String(required=True, load_only=True)
+    # origin = fields.String(required=True)
 
     @validates("postal_code")
     def validate_postal_code(self, value):

@@ -13,7 +13,7 @@ class State(db.Model):
     locations = db.relationship("Location", back_populates="state")
 
     def __repr__(self):
-        return f"<id {self.id}>"
+        return f"<id: {self.id}, state: {self.initials}>"
 
 
 class Location(db.Model):
@@ -34,7 +34,7 @@ class Location(db.Model):
     properties = db.relationship("Property", back_populates="location")
 
     def __repr__(self):
-        return f"<id {self.id}>"
+        return f"<id: {self.id}, postal_code: {self.postal_code}>"
 
 
 class Property(db.Model):
@@ -50,4 +50,4 @@ class Property(db.Model):
     )
 
     def __repr__(self):
-        return f"<id {self.id}>"
+        return f"<id: {self.id}, location: {self.location}>"

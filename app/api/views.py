@@ -1,13 +1,16 @@
 from flask_restful import Resource, reqparse, request, abort
+import logging
 
 from app.models import Property, Location, State
 from app.api.serializers import PropertySchema, PlaceReaderSchema
-from app import db, logger
+from app import db
 from marshmallow import ValidationError
 from app.gmaps import get_place_by_postal_code
 from geoalchemy2 import WKTElement
 
 parser = reqparse.RequestParser()
+
+LOG = logging.getLogger(__name__)
 
 
 class PropertyList(Resource):
@@ -39,15 +42,20 @@ class PropertyList(Resource):
         try:
             result = PropertySchema().load(json_data)
         except ValidationError as err:
+            LOG.error(err)
             abort(400, errors=err.messages)
 
         postal_code = result["postal_code"]
-        location = self.get_location(postal_code)
-        property = Property(
-            price=result.get("price"), area=result.get("area"), location=location
-        )
-        db.session.add(property)
-        db.session.commit()
+        try:
+            location = self.get_location(postal_code)
+            property = Property(
+                price=result.get("price"), area=result.get("area"), location=location
+            )
+            db.session.add(property)
+            db.session.commit()
+        except Exception as err:
+            LOG.error(f"Error persisting property: {err}")
+            abort(400, errors=[err])
 
         return "", 201
 
@@ -56,16 +64,13 @@ class PropertyList(Resource):
         if location is None:
             raw_place = get_place_by_postal_code(postal_code)
             if raw_place is None:
-                return (
-                    {"errors": ["No place was found with the provided postal code."]},
-                    400,
-                )
+                raise Exception(f"Postal code {postal_code} returned no places.")
             try:
                 place = PlaceReaderSchema().load(raw_place)
             except ValidationError as err:
-                logger.info(f"Google Places API returned an invalid value: {raw_place}")
-                logger.info(f"Validation error: {err}")
-                return ({"errors": ["Internal error."]}, 400)
+                LOG.info(f"Google Places API returned an invalid value: {raw_place}")
+                LOG.info(f"Validation error: {err}")
+                raise Exception("Invalid place.")
 
             place = PlaceReaderSchema().load(raw_place)
             state = self.get_state(place["state"])
