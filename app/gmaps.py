@@ -9,13 +9,13 @@ def get_place_by_postal_code(postal_code):
     results = gmaps.geocode(f"{postal_code}, {ISO_CODE}")
     if results:
         geocode_result = results[0]
-        return serialize(geocode_result)
+        return adapt_result(geocode_result)
 
     return None
 
 
-def serialize(geocode_result):
-    address_components = geocode_result["address_components"]
+def adapt_result(geocode_result):
+    address_components = geocode_result.get("address_components", {})
     place = {}
     types = {
         "postal_code": "postal_code",
@@ -24,18 +24,17 @@ def serialize(geocode_result):
         "administrative_area_level_2": "city",
         "administrative_area_level_1": "state",
     }
+    location = geocode_result.get("geometry", {}).get("location", {})
+    place["latitude"] = location.get("lat")
+    place["longitude"] = location.get("lng")
+    place["places_id"] = geocode_result.get("place_id")
     for address_component in address_components:
-        long_name = address_component["long_name"]
-        short_name = address_component["short_name"]
+        long_name = address_component.get("long_name")
+        short_name = address_component.get("short_name")
         for key, value in types.items():
-            if key in address_component["types"]:
+            if key in address_component.get("types"):
                 place[value] = {"long_name": long_name, "short_name": short_name}
                 del types[key]
                 break
-
-    location = geocode_result["geometry"]["location"]
-    place["latitude"] = location["lat"]
-    place["longitude"] = location["lng"]
-    place["places_id"] = geocode_result["place_id"]
 
     return place

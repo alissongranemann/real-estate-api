@@ -45,8 +45,10 @@ pyparsing==2.4.2
 pytest==5.0.1
 pytest-cov==2.7.1
 pytest-env==0.6.2
+pytest-flask==0.15.0
 pytest-html==1.22.0
 pytest-metadata==1.8.0
+pytest-mock==1.10.4
 python-dateutil==2.8.0
 python-dotenv==0.10.3
 python-editor==1.0.4

@@ -27,7 +27,7 @@ class PropertySchema(Schema):
     location = fields.Nested(LocationSchema(), required=True)
 
 
-class PropertyWriterSchema(Schema):
+class PropertyReaderSchema(Schema):
     area = fields.Integer(required=True)
     price = fields.Float(required=True)
     postal_code = fields.String(required=True)
@@ -37,3 +37,28 @@ class PropertyWriterSchema(Schema):
         regex = re.compile(r"[0-9]{5}-[0-9]{3}")
         if not regex.match(value):
             raise ValidationError("postal_code must follow the #####-### pattern.")
+
+
+class AddressComponentLongName(fields.Field):
+    def _deserialize(self, obj, attr, data, **kwargs):
+        if obj is None:
+            return None
+        return obj.get("long_name")
+
+
+class AddressComponentShortName(fields.Field):
+    def _deserialize(self, obj, attr, data, **kwargs):
+        if obj is None:
+            return None
+        return obj.get("short_name")
+
+
+class PlaceReader(Schema):
+    places_id = fields.String(required=True)
+    latitude = fields.Float(required=True)
+    longitude = fields.Float(required=True)
+    street = AddressComponentLongName()
+    neighbourhood = AddressComponentLongName()
+    city = AddressComponentLongName(required=True)
+    state = AddressComponentShortName(required=True)
+    postal_code = AddressComponentShortName(required=True)
