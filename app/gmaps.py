@@ -1,12 +1,10 @@
 import googlemaps
 import os
 
-ISO_CODE = "BR"
-
 
 def get_place_by_postal_code(postal_code):
     gmaps = googlemaps.Client(key=os.environ["GOOGLE_PLACES_API"])
-    results = gmaps.geocode(f"{postal_code}, {ISO_CODE}")
+    results = gmaps.geocode(address=postal_code, components={"country": "BR"})
     if results:
         geocode_result = results[0]
         return adapt_result(geocode_result)
