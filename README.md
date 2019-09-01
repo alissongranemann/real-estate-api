@@ -1,4 +1,4 @@
-# Real State API
+# Real Estate API
 
 ## Local setup
 
