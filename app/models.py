@@ -1,6 +1,11 @@
 from app import db
-
 from geoalchemy2 import Geometry
+from sqlalchemy.sql import func
+
+
+class TimeMixin(object):
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
 
 class State(db.Model):
@@ -16,7 +21,7 @@ class State(db.Model):
         return f"<id: {self.id}, state: {self.initials}>"
 
 
-class Location(db.Model):
+class Location(db.Model, TimeMixin):
     __tablename__ = "locations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -37,7 +42,7 @@ class Location(db.Model):
         return f"<id: {self.id}, postal_code: {self.postal_code}>"
 
 
-class Property(db.Model):
+class Property(db.Model, TimeMixin):
     __tablename__ = "properties"
 
     id = db.Column(db.Integer, primary_key=True)
