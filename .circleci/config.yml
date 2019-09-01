@@ -4,9 +4,9 @@ orbs:
 
 aliases:
   - &step_migrate
-      name: Database migration
-      command: |
-        heroku run make heroku-migrate --app $HEROKU_APP_NAME
+    name: Database migration
+    command: |
+      heroku run make heroku-migrate --app $HEROKU_APP_NAME
 
 workflows:
   build-and-deploy:
@@ -17,13 +17,13 @@ workflows:
             - build
           filters:
             branches:
-             only: stage
+              only: stage
       - prod-deploy:
           requires:
-            - build 
+            - build
           filters:
             branches:
-             only: master
+              only: master
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: 
+          keys:
             - deps-{{ .Branch }}-{{ checksum "poetry.lock" }}
             # fallback to using the latest cache if no exact match is found
             - deps-
@@ -49,7 +49,7 @@ jobs:
             make install
       - save_cache:
           key: deps-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths: 
+          paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
       - run:
           name: Run linter
@@ -71,7 +71,7 @@ jobs:
   stage-deploy:
     executor: heroku/default
     environment:
-      HEROKU_APP_NAME: "real-state-api-stage"
+      HEROKU_APP_NAME: "real-estate-prices-api-stage"
     steps:
       - checkout
       - heroku/deploy-via-git:
@@ -82,7 +82,7 @@ jobs:
   prod-deploy:
     executor: heroku/default
     environment:
-      HEROKU_APP_NAME: "real-state-api"
+      HEROKU_APP_NAME: "real-estate-prices-api"
     steps:
       - checkout
       - heroku/deploy-via-git:
