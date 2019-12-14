@@ -30,11 +30,11 @@ jobs:
     docker:
       - image: circleci/python:3.7.4
         environment:
-          DATABASE_URL: postgres://postgres@localhost:5432/real_state_test
+          DATABASE_URL: postgres://postgres@localhost:5432/real_estate_test
       - image: mdillon/postgis:11-alpine
         environment:
           POSTGRES_USER: postgres
-          POSTGRES_DB: real_state_test
+          POSTGRES_DB: real_estate_test
           POSTGRES_PASSWORD: ""
     steps:
       - checkout

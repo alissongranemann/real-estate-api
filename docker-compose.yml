@@ -1,33 +1,40 @@
-version: '2'
+version: "3.7"
 services:
-    db:
-        image: mdillon/postgis:11-alpine
-        ports:
-        - "5432:5432"
-        environment:
-            POSTGRES_USER: 'postgres'
-            POSTGRES_DB: 'real_state'
-        networks: 
-            - 'real_state'
-    flasky:
-        build: .
-        ports:
-        - "8000:5000"
-        env_file: .env
-        restart: always
-        depends_on: 
-            - db
-        networks: 
-            - 'real_state'
-    pg_admin:
-        image: dpage/pgadmin4:4.11
-        ports:
-        - "80:80"
-        environment:
-            PGADMIN_DEFAULT_EMAIL: "dev@email.com"
-            PGADMIN_DEFAULT_PASSWORD: "123456AB"
-        networks: 
-            - 'real_state'
+  db:
+    image: mdillon/postgis:11-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "real_estate"
+    networks:
+      - "real_estate"
+    volumes:
+      - ./docker/postgresql:/var/lib/postgresql
+  flasky:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:5000"
+    env_file: .env
+    restart: always
+    depends_on:
+      - db
+    networks:
+      - "real_estate"
+    volumes:
+      - ./app:/srv/app/app
+      - /dev/null:/srv/app/.venv #ignore local .venv
+  pg_admin:
+    image: dpage/pgadmin4:4.11
+    ports:
+      - "80:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "dev@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "123456AB"
+    networks:
+      - "real_estate"
 networks:
-  real_state:
+  real_estate:
     driver: bridge

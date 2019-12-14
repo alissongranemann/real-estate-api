@@ -3,6 +3,9 @@ SHELL := /bin/bash
 install:  ## Install all the dependencies
 	@poetry install
 
+update:  ## Update the dependencies as according to the pyproject.toml file.
+	@poetry install
+
 autoformat:  ## Run the autoformatter.
 	@poetry run black .
 

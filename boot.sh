@@ -1,13 +1,12 @@
 #!/bin/sh
-source venv/bin/activate
-
+make update
 while true; do
-    flask deploy
+    poetry run flask run --host=0.0.0.0
     if [[ "$?" == "0" ]]; then
         break
     fi
-    echo Deploy command failed, retrying in 5 secs...
+    echo Start command failed, retrying in 5 secs...
     sleep 5
 done
 
-exec gunicorn -b :5000 --access-logfile - --error-logfile - flasky:app
+# exec gunicorn -b :5000 --access-logfile - --error-logfile - flasky:app

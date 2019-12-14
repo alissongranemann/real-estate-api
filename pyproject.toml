@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "real-state-backend"
+name = "real-estate-backend"
 version = "0.1.0"
 description = ""
 authors = ["Alisson Granemann Abreu <alissongranemannabreu@gmail.com>"]
