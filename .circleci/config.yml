@@ -12,18 +12,18 @@ workflows:
   build-and-deploy:
     jobs:
       - build
-      - stage-deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: stage
-      - prod-deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+      # - stage-deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: stage
+      # - prod-deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: master
 
 jobs:
   build:
