@@ -9,9 +9,7 @@ dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
-
 app = create_app(os.environ["APP_SETTINGS"])
-
 
 template = {
     "swagger": "2.0",
@@ -22,14 +20,11 @@ template = {
             "responsibleOrganization": "ME",
             "responsibleDeveloper": "Me",
             "email": "alissongranemannabreu@gmail.com",
-            "url": "github.com/alissongranemann",
+            "url": "www.github.com/alissongranemann",
         },
         "version": "0.0.1",
     },
-    # "host": "mysite.com",  # overrides localhost:500
-    "basePath": "/api/v1",  # base bash for blueprint registration
     "schemes": ["http", "https"],
-    # "operationId": "getmyData",
 }
 
 swagger = Swagger(app, template=template)

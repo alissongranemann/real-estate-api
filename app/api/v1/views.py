@@ -2,7 +2,7 @@ from flask_restful import Resource, reqparse, request, abort
 import logging
 
 from app.models import Property, Location, State
-from app.api.serializers import PropertySchema, PlaceReaderSchema
+from app.api.v1.serializers import PropertySchema, PlaceReaderSchema
 from app import db
 from marshmallow import ValidationError
 from app.gmaps import get_place_by_postal_code
