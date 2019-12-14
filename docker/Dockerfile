@@ -7,6 +7,7 @@ RUN apk update && \
     apk add postgresql-dev gcc python3-dev build-base musl-dev bash curl
 
 # install poetry
+ENV POETRY_VERSION 1.0.0
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 ENV PATH /root/.poetry/bin:$PATH
 
