@@ -1,5 +1,5 @@
 #!/bin/sh
-make update
+make install
 while true; do
     poetry run flask run --host=0.0.0.0
     if [[ "$?" == "0" ]]; then

@@ -15,6 +15,13 @@ LOG = logging.getLogger(__name__)
 
 class PropertyList(Resource):
     def get(self):
+        """
+        Get properties list.
+        ---
+        responses:
+            200:
+                description: A list of properties
+        """
         parser.add_argument("page", type=float, help="Page index.", required=False)
         parser.add_argument(
             "page_size", type=int, help="Page max size.", required=False
@@ -122,6 +129,13 @@ class PropertyDetail(Resource):
         return "", 204
 
     def get(self, id):
+        """
+        Get a specific property.
+        ---
+        responses:
+            200:
+                description: The property filtered by the provided id
+        """
         schema = PropertySchema()
         property = Property.query.get_or_404(id)
         result = schema.dump(property)
