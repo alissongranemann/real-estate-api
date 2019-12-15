@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: c18de4cac5ad
+Revision ID: 5892a034b273
 Revises:
-Create Date: 2019-12-15 12:29:08.360854
+Create Date: 2019-12-15 12:56:38.772719
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 import geoalchemy2
 
 # revision identifiers, used by Alembic.
-revision = "c18de4cac5ad"
+revision = "5892a034b273"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -42,14 +42,23 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
+        "postal_code",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("code", sa.String(length=9), nullable=False),
+        sa.Column("city_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["city_id"], ["city.id"]),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("code"),
+    )
+    op.create_table(
         "street",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
-        sa.Column("postal_code", sa.String(length=9), nullable=False),
+        sa.Column("postal_code_id", sa.Integer(), nullable=False),
         sa.Column("neighbourhood_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(["neighbourhood_id"], ["neighbourhood.id"]),
+        sa.ForeignKeyConstraint(["postal_code_id"], ["postal_code.id"]),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("postal_code"),
     )
     op.create_table(
         "location",
@@ -68,8 +77,10 @@ def upgrade():
         ),
         sa.Column("places_id", sa.String(), nullable=False),
         sa.Column("street_id", sa.Integer(), nullable=False),
+        sa.Column("postal_code", sa.String(length=9), nullable=False),
         sa.ForeignKeyConstraint(["street_id"], ["street.id"]),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("postal_code"),
     )
     op.create_table(
         "properties",
@@ -96,6 +107,7 @@ def downgrade():
     op.drop_table("properties")
     op.drop_table("location")
     op.drop_table("street")
+    op.drop_table("postal_code")
     op.drop_table("neighbourhood")
     op.drop_table("city")
     op.drop_table("federal_unity")

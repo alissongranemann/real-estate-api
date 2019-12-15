@@ -1,7 +1,15 @@
 from flask_restful import Resource, reqparse, request, abort
 import logging
 
-from app.models import Property, FederalUnity, Location, City, Neighbourhood, Street
+from app.models import (
+    Property,
+    FederalUnity,
+    Location,
+    City,
+    Neighbourhood,
+    Street,
+    PostalCode,
+)
 from app.api.v1.serializers import PropertySchema, PlaceReaderSchema
 from app import db
 from marshmallow import ValidationError
@@ -73,8 +81,7 @@ class PropertyList(Resource):
         query = (
             db.session.query(Location)
             .join(Property)
-            .join(Street)
-            .filter(Street.postal_code == postal_code)
+            .filter(Location.postal_code == postal_code)
             .filter(Property.area == area)
             .filter(Property.price == price)
         )
@@ -82,12 +89,7 @@ class PropertyList(Resource):
         return query.filter(query.exists()).scalar()
 
     def get_location(self, postal_code):
-        query = (
-            db.session.query(Location)
-            .join(Street)
-            .filter(Street.postal_code == postal_code)
-        )
-        location = query.one_or_none()
+        location = Location.query.filter_by(postal_code=postal_code).one_or_none()
         if location is None:
             raw_place = get_place_by_postal_code(postal_code)
             if raw_place is None:
@@ -103,7 +105,8 @@ class PropertyList(Resource):
             federal_unity = self.get_federal_unity(place["federal_unity"])
             city = self.get_city(place.get("city"), federal_unity)
             neighbourhood = self.get_neighbourhood(place.get("neighbourhood"), city)
-            street = self.get_street(place.get("street"), postal_code, neighbourhood)
+            code = self.get_postal_code(postal_code, city)
+            street = self.get_street(place.get("street"), code, neighbourhood)
             longitude = place["longitude"]
             latitude = place["latitude"]
             geom = WKTElement(f"POINT({longitude} {latitude})")
@@ -113,6 +116,7 @@ class PropertyList(Resource):
                 longitude=latitude,
                 places_id=place["places_id"],
                 geom=geom,
+                postal_code=postal_code,
             )
 
         return location
@@ -137,6 +141,13 @@ class PropertyList(Resource):
             return neighbourhood
 
         return Neighbourhood(name=name, city=city)
+
+    def get_postal_code(self, code, city):
+        postal_code = PostalCode.query.filter_by(code=code).one_or_none()
+        if postal_code is not None:
+            return postal_code
+
+        return PostalCode(code=code, city=city)
 
     def get_street(self, name, postal_code, neighbourhood):
         street = Street.query.filter_by(name=name).one_or_none()

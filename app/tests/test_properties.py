@@ -1,7 +1,15 @@
 import json
 import pytest
 
-from app.models import Property, Location, FederalUnity, City, Street, Neighbourhood
+from app.models import (
+    Property,
+    Location,
+    FederalUnity,
+    City,
+    Street,
+    Neighbourhood,
+    PostalCode,
+)
 from geoalchemy2 import WKTElement
 from unittest.mock import patch
 
@@ -33,16 +41,23 @@ def neighbourhood(db, city):
 
 
 @pytest.fixture()
-def street(db, neighbourhood):
+def postal_code(db, city):
+    postal_code = PostalCode(city=city, code="88040-000")
+    persist(db, postal_code)
+    return postal_code
+
+
+@pytest.fixture()
+def street(db, neighbourhood, postal_code):
     street = Street(
-        name="Lauro Linhares", neighbourhood=neighbourhood, postal_code="00000-000"
+        name="Lauro Linhares", neighbourhood=neighbourhood, postal_code=postal_code
     )
     persist(db, street)
     return street
 
 
 @pytest.fixture()
-def location(db, street):
+def location(db, street, postal_code):
     longitude = 10.20
     latitude = -20.10
     geom = WKTElement(f"POINT({longitude} {latitude})")
@@ -52,6 +67,7 @@ def location(db, street):
         longitude=longitude,
         places_id="12345ab",
         geom=geom,
+        postal_code=postal_code.code,
     )
     persist(db, location)
     return location
@@ -218,7 +234,7 @@ def test_get_property(client, property):
     street = location.get("street")
     assert street.get("name") == "Lauro Linhares"
     postal_code = street.get("postal_code")
-    assert postal_code == "00000-000"
+    assert postal_code.get("code") == "88040-000"
     neighbourhood = street.get("neighbourhood")
     assert neighbourhood.get("name") == "Trindade"
     city = neighbourhood.get("city")

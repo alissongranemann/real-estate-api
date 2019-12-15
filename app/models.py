@@ -34,6 +34,7 @@ class City(db.Model):
         "FederalUnity", back_populates="cities", cascade="save-update"
     )
     neighbourhoods = db.relationship("Neighbourhood", back_populates="city")
+    postal_codes = db.relationship("PostalCode", back_populates="city")
 
     def __repr__(self):
         return f"<id: {self.id}, city: {self.name}>"
@@ -55,18 +56,37 @@ class Neighbourhood(db.Model):
         return f"<id: {self.id}, neighbourhood: {self.name}>"
 
 
+class PostalCode(db.Model):
+    __tablename__ = "postal_code"
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(9), nullable=False, unique=True)
+    city_id = db.Column(db.Integer, db.ForeignKey("city.id"), nullable=False)
+
+    city = db.relationship("City", back_populates="postal_codes", cascade="save-update")
+    streets = db.relationship("Street", back_populates="postal_code")
+
+    def __repr__(self):
+        return f"<id: {self.id}, code: {self.code}>"
+
+
 class Street(db.Model):
     __tablename__ = "street"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
-    postal_code = db.Column(db.String(9), nullable=False, unique=True)
+    postal_code_id = db.Column(
+        db.Integer, db.ForeignKey("postal_code.id"), nullable=False
+    )
     neighbourhood_id = db.Column(
         db.Integer, db.ForeignKey("neighbourhood.id"), nullable=False
     )
 
     neighbourhood = db.relationship(
         "Neighbourhood", back_populates="streets", cascade="save-update"
+    )
+    postal_code = db.relationship(
+        "PostalCode", back_populates="streets", cascade="save-update"
     )
     locations = db.relationship("Location", back_populates="street")
 
@@ -83,6 +103,7 @@ class Location(db.Model, TimeMixin):
     geom = db.Column(Geometry("POINT"), nullable=False)
     places_id = db.Column(db.String(), nullable=False)
     street_id = db.Column(db.Integer, db.ForeignKey("street.id"), nullable=False)
+    postal_code = db.Column(db.String(9), nullable=False, unique=True)
 
     street = db.relationship(
         "Street", back_populates="locations", cascade="save-update"

@@ -12,7 +12,15 @@ if os.path.exists(dotenv_path):
 
 app = create_app(os.environ["APP_SETTINGS"])
 
-from app.models import FederalUnity, City, Neighbourhood, Street, Property, Location
+from app.models import (
+    FederalUnity,
+    City,
+    Neighbourhood,
+    Street,
+    Property,
+    Location,
+    PostalCode,
+)
 
 template = {
     "swagger": "2.0",
