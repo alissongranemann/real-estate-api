@@ -137,7 +137,7 @@ def test_add_property(
     )
     data = json.loads(response.data.decode())
     assert response.status_code == 201
-    assert "" == data
+    assert data.get("id") is not None
 
 
 @patch("app.services.get_place_by_postal_code")

@@ -34,6 +34,7 @@ def save_property(location, price, area, url):
     property = Property(location=location, price=price, area=area, url=url)
     db.session.add(property)
     db.session.commit()
+    return property
 
 
 def delete_property(id):

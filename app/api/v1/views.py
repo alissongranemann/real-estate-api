@@ -20,13 +20,6 @@ LOG = logging.getLogger(__name__)
 
 class PropertyList(Resource):
     def get(self):
-        """
-        Get properties list.
-        ---
-        responses:
-            200:
-                description: A list of properties
-        """
         parser.add_argument("page", type=float, help="Page index.", required=False)
         parser.add_argument(
             "page_size", type=int, help="Page max size.", required=False
@@ -68,12 +61,13 @@ class PropertyList(Resource):
             if location is None:
                 location = create_location(postal_code)
 
-            save_property(location, price, area, url)
+            property = save_property(location, price, area, url)
         except Exception as err:
             LOG.error(f"Error while creating a property: {err}")
             abort(400, errors=[err])
 
-        return "", 201
+        schema = PropertySchema()
+        return schema.dump(property), 201
 
 
 class PropertyDetail(Resource):
@@ -82,13 +76,6 @@ class PropertyDetail(Resource):
         return "", 204
 
     def get(self, id):
-        """
-        Get a specific property.
-        ---
-        responses:
-            200:
-                description: The property filtered by the provided id
-        """
         schema = PropertySchema()
         result = schema.dump(get_property(id))
         return result

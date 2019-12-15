@@ -49,7 +49,7 @@ class LocationSchema(Schema):
 
 
 class PropertySchema(Schema):
-    id = fields.Integer()
+    id = fields.Integer(dump_only=True)
     area = fields.Integer(required=True)
     price = fields.Float(required=True)
     location = fields.Nested(LocationSchema(), required=True, dump_only=True)

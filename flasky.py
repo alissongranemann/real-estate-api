@@ -22,23 +22,7 @@ from app.models import (
     PostalCode,
 )
 
-template = {
-    "swagger": "2.0",
-    "info": {
-        "title": "Real Estate API",
-        "description": "An API for real estate prices",
-        "contact": {
-            "responsibleOrganization": "ME",
-            "responsibleDeveloper": "Me",
-            "email": "alissongranemannabreu@gmail.com",
-            "url": "www.github.com/alissongranemann",
-        },
-        "version": "0.0.1",
-    },
-    "schemes": ["http", "https"],
-}
-
-swagger = Swagger(app, template=template)
+Swagger(app, template_file="docs/properties_template.yml")
 
 logging.basicConfig(
     level=logging.DEBUG,

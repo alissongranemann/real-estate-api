@@ -1,0 +1,144 @@
+swagger: "2.0"
+info:
+  description: An API for real estate prices
+  version: 0.0.1
+  title: Real Estate API
+  contact:
+    email: "alissongranemannabreu@gmail.com"
+    url: "https://github.com/alissongranemann"
+basePath: "/api/v1"
+schemes:
+  - http
+  - https
+paths:
+  /properties/{id}:
+    get:
+      summary: Find a property by id
+      operationId: getProperty
+      parameters:
+        - name: "propertyId"
+          in: "path"
+          description: "ID of property to return"
+          required: true
+          type: "integer"
+          format: "int64"
+      produces:
+        - application/json
+      responses:
+        200:
+          description: The property filtered by the provided id
+          schema:
+            $ref: "#/definitions/PropertyReader"
+        404:
+          description: The property was not found
+      tags:
+        - properties
+    delete:
+      summary: Deletes a property
+      operationId: deleteProperty
+      parameters:
+        - name: "propertyId"
+          in: "path"
+          description: "Property ID to delete"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        204:
+          description: The property was successfully deleted
+        404:
+          description: The property was not found
+      tags:
+        - properties
+  /properties:
+    get:
+      summary: Returns properties
+      operationId: getProperties
+      produces:
+        - application/json
+      parameters:
+        - name: "page"
+          in: "path"
+          description: "Page index"
+          type: "integer"
+          format: "int64"
+        - name: "page_size"
+          in: "path"
+          description: "Maximum length of the page"
+          type: "integer"
+          format: "int64"
+      responses:
+        200:
+          description: A list of properties
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/PropertyReader"
+      tags:
+        - properties
+    post:
+      summary: Add a new property
+      operationId: addProperty
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Property to be added"
+          required: true
+          schema:
+            $ref: "#/definitions/PropertyWriter"
+      responses:
+        201:
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/PropertyReader"
+        303:
+          description: Property already exists
+        400:
+          description: Invalid property
+      tags:
+        - properties
+definitions:
+  Property:
+    properties: &PropertyProps
+      area:
+        type: "integer"
+        format: "int64"
+      price:
+        type: "number"
+        format: "float"
+    type: object
+  PropertyReader:
+    properties:
+      <<: *PropertyProps
+      id:
+        type: "integer"
+        format: "int64"
+      location:
+        $ref: "#/definitions/Location"
+    type: object
+  PropertyWriter:
+    properties:
+      <<: *PropertyProps
+      postal_code:
+        type: "string"
+      url:
+        type: "string"
+    type: object
+  Location:
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      latitude:
+        type: "number"
+        format: "float"
+      longitude:
+        type: "number"
+        format: "float"
+      places_id:
+        type: "integer"
+        format: "int64"
