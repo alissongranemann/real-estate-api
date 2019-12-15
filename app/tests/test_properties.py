@@ -125,7 +125,7 @@ def place():
     }
 
 
-@patch("app.api.v1.views.get_place_by_postal_code")
+@patch("app.services.get_place_by_postal_code")
 def test_add_property(
     mock_get_place_by_postal_code, client, federal_unity, scrapped_property, place
 ):
@@ -140,7 +140,7 @@ def test_add_property(
     assert "" == data
 
 
-@patch("app.api.v1.views.get_place_by_postal_code")
+@patch("app.services.get_place_by_postal_code")
 def test_add_existent_property(
     mock_get_place_by_postal_code, client, federal_unity, scrapped_property, place
 ):

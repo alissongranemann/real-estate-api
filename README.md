@@ -28,6 +28,8 @@ poetry config virtualenvs.in-project true
 make install
 ```
 
+If you don't wanna a local virtual env, just run `make install` alone.
+
 ### Development
 
 You can always use Docker (recommended) to get those things isolated, in a container.
@@ -44,3 +46,5 @@ docker-compose exec flasky make migrate
 ```
 
 Check the running application on your browser with the `http://127.0.0.1:8000/api/v1` url.
+
+This project uses `flasgger` and you can access the API documentation on `http://127.0.0.1:8000/apidocs`.
