@@ -2,7 +2,7 @@ from marshmallow import Schema, fields, validates, ValidationError
 import re
 
 
-class StateSchema(Schema):
+class FederalUnitySchema(Schema):
     id = fields.Integer()
     name = fields.String(required=True)
     short_name = fields.String(required=True)
@@ -11,7 +11,7 @@ class StateSchema(Schema):
 class CitySchema(Schema):
     id = fields.Integer()
     name = fields.String(required=True)
-    state = fields.Nested(StateSchema(), required=True, dump_only=True)
+    federal_unity = fields.Nested(FederalUnitySchema(), required=True, dump_only=True)
 
 
 class NeighbourhoodSchema(Schema):
@@ -33,7 +33,6 @@ class LocationSchema(Schema):
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
     places_id = fields.String(required=True)
-    state = fields.Nested(StateSchema(), required=True)
 
 
 class PropertySchema(Schema):
@@ -79,5 +78,5 @@ class PlaceReaderSchema(Schema):
     street = AddressComponentLongName()
     neighbourhood = AddressComponentLongName()
     city = AddressComponentLongName(required=True)
-    state = AddressComponentShortLongName(required=True)
+    federal_unity = AddressComponentShortLongName(required=True)
     postal_code = AddressComponentShortName(required=True)

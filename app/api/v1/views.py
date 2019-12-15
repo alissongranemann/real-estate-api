@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse, request, abort
 import logging
 
-from app.models import Property, Location, State, City, Neighbourhood, Street
+from app.models import Property, FederalUnity, Location, City, Neighbourhood, Street
 from app.api.v1.serializers import PropertySchema, PlaceReaderSchema
 from app import db
 from marshmallow import ValidationError
@@ -100,8 +100,8 @@ class PropertyList(Resource):
                 raise Exception("Invalid place.")
 
             place = PlaceReaderSchema().load(raw_place)
-            state = self.get_state(place["state"])
-            city = self.get_city(place.get("city"), state)
+            federal_unity = self.get_federal_unity(place["federal_unity"])
+            city = self.get_city(place.get("city"), federal_unity)
             neighbourhood = self.get_neighbourhood(place.get("neighbourhood"), city)
             street = self.get_street(place.get("street"), postal_code, neighbourhood)
             longitude = place["longitude"]
@@ -117,18 +117,19 @@ class PropertyList(Resource):
 
         return location
 
-    def get_state(self, state_data):
-        short_name = state_data[0]
-        return State.query.filter_by(short_name=short_name).first_or_404(
-            description=f"There is no '{short_name}' state"
+    def get_federal_unity(self, federal_unity_data):
+        short_name = federal_unity_data[0]
+        return FederalUnity.query.filter_by(short_name=short_name).first_or_404(
+            description=f"There is no '{short_name}' federal_unity"
         )
+        return None
 
-    def get_city(self, name, state):
+    def get_city(self, name, federal_unity):
         city = City.query.filter_by(name=name).one_or_none()
         if city is not None:
             return city
 
-        return City(name=name, state=state)
+        return City(name=name, federal_unity=federal_unity)
 
     def get_neighbourhood(self, name, city):
         neighbourhood = Neighbourhood.query.filter_by(name=name).one_or_none()

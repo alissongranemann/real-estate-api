@@ -8,17 +8,17 @@ class TimeMixin(object):
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
 
-class State(db.Model):
-    __tablename__ = "state"
+class FederalUnity(db.Model):
+    __tablename__ = "federal_unity"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
     short_name = db.Column(db.String(2), nullable=False)
 
-    cities = db.relationship("City", back_populates="state")
+    cities = db.relationship("City", back_populates="federal_unity")
 
     def __repr__(self):
-        return f"<id: {self.id}, state: {self.short_name}>"
+        return f"<id: {self.id}, federal_unity: {self.short_name}>"
 
 
 class City(db.Model):
@@ -26,9 +26,13 @@ class City(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
-    state_id = db.Column(db.Integer, db.ForeignKey("state.id"), nullable=False)
+    federal_unity_id = db.Column(
+        db.Integer, db.ForeignKey("federal_unity.id"), nullable=False
+    )
 
-    state = db.relationship("State", back_populates="cities", cascade="save-update")
+    federal_unity = db.relationship(
+        "FederalUnity", back_populates="cities", cascade="save-update"
+    )
     neighbourhoods = db.relationship("Neighbourhood", back_populates="city")
 
     def __repr__(self):

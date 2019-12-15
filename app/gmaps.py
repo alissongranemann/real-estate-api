@@ -20,7 +20,7 @@ def adapt_result(geocode_result):
         "route": "street",
         "sublocality": "neighbourhood",
         "administrative_area_level_2": "city",
-        "administrative_area_level_1": "state",
+        "administrative_area_level_1": "federal_unity",
     }
     location = geocode_result.get("geometry", {}).get("location", {})
     place["latitude"] = location.get("lat")

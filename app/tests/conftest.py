@@ -1,4 +1,3 @@
-# flake8: noqa
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database, drop_database
@@ -25,7 +24,6 @@ def app():
 @pytest.fixture(scope="function")
 def db(app, request):
     from app import db
-    from app.models import State, City, Neighbourhood, Street, Property, Location
 
     with app.app_context():
         db.create_all()

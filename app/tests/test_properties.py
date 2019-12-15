@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from app.models import Property, Location, State, City, Street, Neighbourhood
+from app.models import Property, Location, FederalUnity, City, Street, Neighbourhood
 from geoalchemy2 import WKTElement
 from unittest.mock import patch
 
@@ -12,15 +12,15 @@ def persist(db, model):
 
 
 @pytest.fixture()
-def state(db):
-    state = State(name="Santa Catarina", short_name="SC")
-    persist(db, state)
-    return state
+def federal_unity(db):
+    federal_unity = FederalUnity(name="Santa Catarina", short_name="SC")
+    persist(db, federal_unity)
+    return federal_unity
 
 
 @pytest.fixture()
-def city(db, state):
-    city = City(name="Florianópolis", state=state)
+def city(db, federal_unity):
+    city = City(name="Florianópolis", federal_unity=federal_unity)
     persist(db, city)
     return city
 
@@ -58,7 +58,7 @@ def location(db, street):
 
 
 @pytest.fixture()
-def property(db, state, city, neighbourhood, street, location):
+def property(db, federal_unity, city, neighbourhood, street, location):
     property = Property(
         price=50000.0, area=40, location=location, url="http://site.com"
     )
@@ -68,7 +68,7 @@ def property(db, state, city, neighbourhood, street, location):
 
 
 @pytest.fixture()
-def properties(db, state, property, city, neighbourhood, street, location):
+def properties(db, federal_unity, property, city, neighbourhood, street, location):
     property2 = Property(
         price=75000.0, area=55, location=location, url="http://site.com"
     )
@@ -102,7 +102,7 @@ def place():
         },
         "neighbourhood": {"long_name": "Pantanal", "short_name": "Pantanal"},
         "city": {"long_name": "Florianópolis", "short_name": "Florianópolis"},
-        "state": {"long_name": "Santa Catarina", "short_name": "SC"},
+        "federal_unity": {"long_name": "Santa Catarina", "short_name": "SC"},
         "latitude": -27.6090093,
         "longitude": -48.5215363,
         "places_id": "ChIJn4fZaqg5J5URBkczejLhp_4",
@@ -111,7 +111,7 @@ def place():
 
 @patch("app.api.v1.views.get_place_by_postal_code")
 def test_add_property(
-    mock_get_place_by_postal_code, client, state, scrapped_property, place
+    mock_get_place_by_postal_code, client, federal_unity, scrapped_property, place
 ):
     mock_get_place_by_postal_code.return_value = place
     response = client.post(
@@ -126,7 +126,7 @@ def test_add_property(
 
 @patch("app.api.v1.views.get_place_by_postal_code")
 def test_add_existent_property(
-    mock_get_place_by_postal_code, client, state, scrapped_property, place
+    mock_get_place_by_postal_code, client, federal_unity, scrapped_property, place
 ):
     mock_get_place_by_postal_code.return_value = place
     response = client.post(
@@ -223,11 +223,11 @@ def test_get_property(client, property):
     assert neighbourhood.get("name") == "Trindade"
     city = neighbourhood.get("city")
     assert city.get("name") == "Florianópolis"
-    state = city.get("state")
-    assert len(state) == 3
-    short_name = state.get("short_name")
+    federal_unity = city.get("federal_unity")
+    assert len(federal_unity) == 3
+    short_name = federal_unity.get("short_name")
     assert short_name == "SC"
-    name = state.get("name")
+    name = federal_unity.get("name")
     assert name == "Santa Catarina"
     places_id = location.get("places_id")
     assert places_id == "12345ab"
