@@ -1,21 +1,99 @@
 import json
+import pytest
 
-from app.models import Property, Location, State
+from app.models import Property, Location, State, City, Street, Neighbourhood
 from geoalchemy2 import WKTElement
 from unittest.mock import patch
 
 
-def get_valid_property(area=50, price=50000.0, postal_code="88040-000"):
+def persist(db, model):
+    db.session.add(model)
+    db.session.commit()
+
+
+@pytest.fixture()
+def state(db):
+    state = State(name="Santa Catarina", short_name="SC")
+    persist(db, state)
+    return state
+
+
+@pytest.fixture()
+def city(db, state):
+    city = City(name="Florianópolis", state=state)
+    persist(db, city)
+    return city
+
+
+@pytest.fixture()
+def neighbourhood(db, city):
+    neighbourhood = Neighbourhood(name="Trindade", city=city)
+    persist(db, neighbourhood)
+    return neighbourhood
+
+
+@pytest.fixture()
+def street(db, neighbourhood):
+    street = Street(
+        name="Lauro Linhares", neighbourhood=neighbourhood, postal_code="00000-000"
+    )
+    persist(db, street)
+    return street
+
+
+@pytest.fixture()
+def location(db, street):
+    longitude = 10.20
+    latitude = -20.10
+    geom = WKTElement(f"POINT({longitude} {latitude})")
+    location = Location(
+        street=street,
+        latitude=latitude,
+        longitude=longitude,
+        places_id="12345ab",
+        geom=geom,
+    )
+    persist(db, location)
+    return location
+
+
+@pytest.fixture()
+def property(db, state, city, neighbourhood, street, location):
+    property = Property(
+        price=50000.0, area=40, location=location, url="http://site.com"
+    )
+    db.session.add(property)
+    db.session.commit()
+    return property
+
+
+@pytest.fixture()
+def properties(db, state, property, city, neighbourhood, street, location):
+    property2 = Property(
+        price=75000.0, area=55, location=location, url="http://site.com"
+    )
+    db.session.add(property2)
+    property3 = Property(
+        price=110000.0, area=80, location=location, url="http://site.com"
+    )
+    db.session.add(property3)
+    db.session.commit()
+
+    return [property, property2, property3]
+
+
+@pytest.fixture
+def scrapped_property():
     return {
-        "area": area,
-        "price": price,
-        "postal_code": postal_code,
+        "area": 50,
+        "price": 50000.0,
+        "postal_code": "88040-000",
         "url": "http://site.com",
-        # "origin": "origin",
     }
 
 
-def get_valid_place():
+@pytest.fixture
+def place():
     return {
         "postal_code": {"long_name": "88040-000", "short_name": "88040-000"},
         "street": {
@@ -31,12 +109,14 @@ def get_valid_place():
     }
 
 
-@patch("app.api.views.get_place_by_postal_code")
-def test_add_property(mock_get_place_by_postal_code, client):
-    mock_get_place_by_postal_code.return_value = get_valid_place()
+@patch("app.api.v1.views.get_place_by_postal_code")
+def test_add_property(
+    mock_get_place_by_postal_code, client, state, scrapped_property, place
+):
+    mock_get_place_by_postal_code.return_value = place
     response = client.post(
         "/api/v1/properties",
-        data=json.dumps(get_valid_property(100, 100000.0)),
+        data=json.dumps(scrapped_property),
         content_type="application/json",
     )
     data = json.loads(response.data.decode())
@@ -44,25 +124,27 @@ def test_add_property(mock_get_place_by_postal_code, client):
     assert "" == data
 
 
-@patch("app.api.views.get_place_by_postal_code")
-def test_add_existent_property(mock_get_place_by_postal_code, client):
-    mock_get_place_by_postal_code.return_value = get_valid_place()
+@patch("app.api.v1.views.get_place_by_postal_code")
+def test_add_existent_property(
+    mock_get_place_by_postal_code, client, state, scrapped_property, place
+):
+    mock_get_place_by_postal_code.return_value = place
     response = client.post(
         "/api/v1/properties",
-        data=json.dumps(get_valid_property(100, 100000.0)),
+        data=json.dumps(scrapped_property),
         content_type="application/json",
     )
     assert response.status_code == 201
     response = client.post(
         "/api/v1/properties",
-        data=json.dumps(get_valid_property(100, 100000.0)),
+        data=json.dumps(scrapped_property),
         content_type="application/json",
     )
     assert response.status_code == 303
 
 
-def test_add_invalid_price_property(client):
-    invalid_property = get_valid_property()
+def test_add_invalid_price_property(client, scrapped_property):
+    invalid_property = scrapped_property
     invalid_property["price"] = "invalid"
     response = client.post(
         "/api/v1/properties",
@@ -80,8 +162,8 @@ def test_add_invalid_price_property(client):
     assert "not a valid number" in price_error[0].lower()
 
 
-def test_add_invalid_area_property(client):
-    invalid_property = get_valid_property()
+def test_add_invalid_area_property(client, scrapped_property):
+    invalid_property = scrapped_property
     invalid_property["area"] = "invalid"
     response = client.post(
         "/api/v1/properties",
@@ -98,8 +180,8 @@ def test_add_invalid_area_property(client):
     assert "not a valid integer" in area_error[0].lower()
 
 
-def test_add_invalid_cep_property(client):
-    invalid_property = get_valid_property()
+def test_add_invalid_cep_property(client, scrapped_property):
+    invalid_property = scrapped_property
     invalid_property["postal_code"] = "invalid"
     response = client.post(
         "/api/v1/properties",
@@ -116,17 +198,13 @@ def test_add_invalid_cep_property(client):
     assert "must follow the #####-### pattern" in postal_code_error[0]
 
 
-def test_delete_property(client, db):
-    property = save_new_property(db)
-
+def test_delete_property(client, property):
     response = client.delete(f"/api/v1/properties/{property.id}")
     assert response.status_code == 204
     assert Property.query.count() == 0
 
 
-def test_get_property(client, db):
-    property = save_new_property(db)
-
+def test_get_property(client, property):
     response = client.get(f"/api/v1/properties/{property.id}")
     assert response.status_code == 200
     data = json.loads(response.data.decode())
@@ -136,34 +214,30 @@ def test_get_property(client, db):
     price = data.get("price")
     assert price == 50000.0
     location = data.get("location")
-    assert len(location) == 9
-    city = location.get("city")
-    assert city == "Florianópolis"
-    postal_code = location.get("postal_code")
-    assert postal_code == "00000-000"
-    neighbourhood = location.get("neighbourhood")
-    assert neighbourhood == "Bairro teste"
+    assert len(location) == 5
     street = location.get("street")
-    assert street == "Rua teste"
+    assert street.get("name") == "Lauro Linhares"
+    postal_code = street.get("postal_code")
+    assert postal_code == "00000-000"
+    neighbourhood = street.get("neighbourhood")
+    assert neighbourhood.get("name") == "Trindade"
+    city = neighbourhood.get("city")
+    assert city.get("name") == "Florianópolis"
+    state = city.get("state")
+    assert len(state) == 3
+    short_name = state.get("short_name")
+    assert short_name == "SC"
+    name = state.get("name")
+    assert name == "Santa Catarina"
     places_id = location.get("places_id")
     assert places_id == "12345ab"
     latitude = location.get("latitude")
     assert latitude == -20.10
     longitude = location.get("longitude")
     assert longitude == 10.20
-    state = location.get("state")
-    assert len(state) == 3
-    initials = state.get("initials")
-    assert initials == "SC"
-    description = state.get("description")
-    assert description == "Santa Catarina"
 
 
-def test_get_properties(client, db):
-    save_new_property(db, "00000-000", "12345ab")
-    save_new_property(db, "00000-001", "12345cd")
-    save_new_property(db, "00000-002", "12345ef")
-
+def test_get_properties(client, properties):
     response = client.get(f"/api/v1/properties")
     assert response.status_code == 200
     data = json.loads(response.data.decode())
@@ -171,27 +245,3 @@ def test_get_properties(client, db):
     assert len(page) == 3
     total = data.get("total")
     assert total == 3
-
-
-def save_new_property(db, postal_code="00000-000", places_id="12345ab"):
-    state = State(initials="SC", description="Santa Catarina")
-    longitude = 10.20
-    latitude = -20.10
-    geom = WKTElement(f"POINT({longitude} {latitude})")
-    location = Location(
-        state=state,
-        postal_code=postal_code,
-        street="Rua teste",
-        neighbourhood="Bairro teste",
-        city="Florianópolis",
-        latitude=latitude,
-        longitude=longitude,
-        places_id=places_id,
-        geom=geom,
-    )
-    property = Property(
-        price=50000.0, area=40, location=location, url="http://site.com"
-    )
-    db.session.add(property)
-    db.session.commit()
-    return property

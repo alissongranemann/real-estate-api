@@ -4,16 +4,32 @@ import re
 
 class StateSchema(Schema):
     id = fields.Integer()
-    description = fields.String(required=True)
-    initials = fields.String(required=True)
+    name = fields.String(required=True)
+    short_name = fields.String(required=True)
+
+
+class CitySchema(Schema):
+    id = fields.Integer()
+    name = fields.String(required=True)
+    state = fields.Nested(StateSchema(), required=True, dump_only=True)
+
+
+class NeighbourhoodSchema(Schema):
+    id = fields.Integer()
+    name = fields.String(required=True)
+    city = fields.Nested(CitySchema(), required=True, dump_only=True)
+
+
+class StreetSchema(Schema):
+    id = fields.Integer()
+    name = fields.String(required=True)
+    postal_code = fields.String(required=True)
+    neighbourhood = fields.Nested(NeighbourhoodSchema(), required=True, dump_only=True)
 
 
 class LocationSchema(Schema):
     id = fields.Integer()
-    postal_code = fields.String(required=True)
-    street = fields.String(required=True)
-    neighbourhood = fields.String(required=True)
-    city = fields.String(required=True)
+    street = fields.Nested(StreetSchema(), required=True, dump_only=True)
     latitude = fields.Float(required=True)
     longitude = fields.Float(required=True)
     places_id = fields.String(required=True)
@@ -21,13 +37,12 @@ class LocationSchema(Schema):
 
 
 class PropertySchema(Schema):
-    id = fields.Integer(dump_only=True)
+    id = fields.Integer()
     area = fields.Integer(required=True)
     price = fields.Float(required=True)
     location = fields.Nested(LocationSchema(), required=True, dump_only=True)
     postal_code = fields.String(required=True, load_only=True)
     url = fields.String(required=True, load_only=True)
-    # origin = fields.String(required=True)
 
     @validates("postal_code")
     def validate_postal_code(self, value):

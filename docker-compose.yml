@@ -25,6 +25,7 @@ services:
       - "real_estate"
     volumes:
       - ./app:/srv/app/app
+      - ./migrations:/srv/app/migrations
       - /dev/null:/srv/app/.venv #ignore local .venv
   pg_admin:
     image: dpage/pgadmin4:4.11

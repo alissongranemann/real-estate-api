@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse, request, abort
 import logging
 
-from app.models import Property, Location, State
+from app.models import Property, Location, State, City, Neighbourhood, Street
 from app.api.v1.serializers import PropertySchema, PlaceReaderSchema
 from app import db
 from marshmallow import ValidationError
@@ -56,10 +56,10 @@ class PropertyList(Resource):
         price = result.get("price")
         area = result.get("area")
         url = result.get("url")
+        if self.property_exists(postal_code, price, area):
+            return "", 303
         try:
             location = self.get_location(postal_code)
-            if self.property_exists(postal_code, price, area):
-                return "", 303
             property = Property(price=price, area=area, location=location, url=url)
             db.session.add(property)
             db.session.commit()
@@ -73,7 +73,8 @@ class PropertyList(Resource):
         query = (
             db.session.query(Location)
             .join(Property)
-            .filter(Location.postal_code == postal_code)
+            .join(Street)
+            .filter(Street.postal_code == postal_code)
             .filter(Property.area == area)
             .filter(Property.price == price)
         )
@@ -81,7 +82,12 @@ class PropertyList(Resource):
         return query.filter(query.exists()).scalar()
 
     def get_location(self, postal_code):
-        location = Location.query.filter_by(postal_code=postal_code).one_or_none()
+        query = (
+            db.session.query(Location)
+            .join(Street)
+            .filter(Street.postal_code == postal_code)
+        )
+        location = query.one_or_none()
         if location is None:
             raw_place = get_place_by_postal_code(postal_code)
             if raw_place is None:
@@ -95,15 +101,14 @@ class PropertyList(Resource):
 
             place = PlaceReaderSchema().load(raw_place)
             state = self.get_state(place["state"])
+            city = self.get_city(place.get("city"), state)
+            neighbourhood = self.get_neighbourhood(place.get("neighbourhood"), city)
+            street = self.get_street(place.get("street"), postal_code, neighbourhood)
             longitude = place["longitude"]
             latitude = place["latitude"]
             geom = WKTElement(f"POINT({longitude} {latitude})")
             location = Location(
-                state=state,
-                postal_code=postal_code,
-                street=place.get("street"),
-                neighbourhood=place.get("neighbourhood"),
-                city=place.get("city"),
+                street=street,
                 latitude=longitude,
                 longitude=latitude,
                 places_id=place["places_id"],
@@ -113,12 +118,31 @@ class PropertyList(Resource):
         return location
 
     def get_state(self, state_data):
-        state_initials = state_data[0]
-        state = State.query.filter_by(initials=state_initials).one_or_none()
-        if state is None:
-            state = State(initials=state_initials, description=state_data[1])
+        short_name = state_data[0]
+        return State.query.filter_by(short_name=short_name).first_or_404(
+            description=f"There is no '{short_name}' state"
+        )
 
-        return state
+    def get_city(self, name, state):
+        city = City.query.filter_by(name=name).one_or_none()
+        if city is not None:
+            return city
+
+        return City(name=name, state=state)
+
+    def get_neighbourhood(self, name, city):
+        neighbourhood = Neighbourhood.query.filter_by(name=name).one_or_none()
+        if neighbourhood is not None:
+            return neighbourhood
+
+        return Neighbourhood(name=name, city=city)
+
+    def get_street(self, name, postal_code, neighbourhood):
+        street = Street.query.filter_by(name=name).one_or_none()
+        if street is not None:
+            return street
+
+        return Street(name=name, neighbourhood=neighbourhood, postal_code=postal_code)
 
 
 class PropertyDetail(Resource):
