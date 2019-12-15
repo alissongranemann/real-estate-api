@@ -1,7 +1,8 @@
+# flake8: noqa
 import os
 from dotenv import load_dotenv
-from app import create_app, db  # noqa: F401
-from app.models import Property, Location  # noqa: F401
+from app import create_app, db
+
 from flasgger import Swagger
 import logging
 
@@ -10,6 +11,8 @@ if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
 app = create_app(os.environ["APP_SETTINGS"])
+
+from app.models import State, City, Neighbourhood, Street, Property, Location
 
 template = {
     "swagger": "2.0",
